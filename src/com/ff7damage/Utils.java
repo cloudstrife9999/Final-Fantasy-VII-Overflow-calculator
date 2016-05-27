@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.swing.JLabel;
 
+import com.ff7damage.characters.CharacterInterface;
 import com.ff7damage.view.Aerith;
 import com.ff7damage.view.Barret;
 import com.ff7damage.view.CaitSith;
@@ -20,6 +21,30 @@ import com.ff7damage.view.Yuffie;
 
 public class Utils {
 	public static final int USELESS = -1;
+	
+	public static final Map<Byte, Elements> elements = new HashMap<Byte, Elements>() {
+		private static final long serialVersionUID = 2175508689893935234L;
+
+		{
+			put((byte) 0x00, Elements.FIRE);
+			put((byte) 0x01, Elements.ICE);
+			put((byte) 0x02, Elements.LIGHTNING);
+			put((byte) 0x03, Elements.EARTH);
+			put((byte) 0x04, Elements.WIND);
+			put((byte) 0x05, Elements.WATER);
+			put((byte) 0x06, Elements.POISON);
+			put((byte) 0x07, Elements.HOLY);
+			put((byte) 0x08, Elements.GRAVITY);
+			put((byte) 0x09, Elements.RESTORATIVE);
+			put((byte) 0x0A, Elements.CUT);
+			put((byte) 0x0B, Elements.HIT);
+			put((byte) 0x0C, Elements.PUNCH);
+			put((byte) 0x0D, Elements.SHOOT);
+			put((byte) 0x0E, Elements.SHOUT);
+			put((byte) 0x0F, Elements.HIDDEN);
+			put((byte) 0x10, Elements.NONELEMENTAL);
+		}
+	};
 	
 	public static int sanitize(int value, int min, int max, int def) {
 		if(value < min || value > max) {
@@ -55,12 +80,6 @@ public class Utils {
 		header.setHorizontalAlignment(JLabel.CENTER);
 		
 		return header;
-	}
-	
-	public static byte[] stringToShortToByteArray(String input) {
-		short s = Short.parseShort(input);
-
-		return ByteBuffer.allocate(2).putShort(s).array();
 	}
 	
 	public static byte[] stringToIntToByteArray(String input) {
@@ -120,11 +139,11 @@ public class Utils {
 		}
 		case "Absorbs":
 		{
-			return 0x00;
+			return 0x01;
 		}
 		case "Doesn't absorb":
 		{
-			return 0x01;
+			return 0x00;
 		}
 		default:
 		{
@@ -266,5 +285,9 @@ public class Utils {
 	
 	public static byte intToHex(int value) {
 		return Integer.valueOf(String.valueOf(value), 16).byteValue();
+	}
+	
+	public CharacterInterface constructCharacterFromCode(byte code, Object... params) {
+		return null; //TODO
 	}
 }

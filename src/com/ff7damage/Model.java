@@ -1,13 +1,20 @@
 package com.ff7damage;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 
+import com.ff7damage.characters.CharacterFactory;
 import com.ff7damage.characters.CharacterInterface;
+import com.ff7damage.weapons.WeaponInterface;
+import com.ff7damage.weapons.WeaponsFactory;
 
 public class Model extends Observable implements Observer {
 	private int heroDrinksNumber;
@@ -16,22 +23,14 @@ public class Model extends Observable implements Observer {
 	private Target target;
 	private boolean splitAttack;
 	private Elements attackElement;
+	private int techniquePower;
 	private Random random;
 	private Overflow overflow;
 	
 	private byte[] resultsForController;
 	
-	public Model(CharacterInterface attacker, int heroDrinksNumber, boolean splitAttack, Target target,
-			boolean criticalHit, Elements attackElement) {
-		
-		this.heroDrinksNumber = Math.max(0, Math.min(4, heroDrinksNumber)); //just a sanitization
-		this.criticalHit = criticalHit;
-		this.attacker = attacker;
-		this.target = target;
-		this.splitAttack = splitAttack;
-		this.attackElement = attackElement;
+	public Model() {
 		this.random = new SecureRandom();
-		this.overflow = new Overflow();
 	}
 	
 	private int criticalMultiplier() {
@@ -115,27 +114,27 @@ public class Model extends Observable implements Observer {
 		return Math.max(0, 512 - this.target.getDefense());
 	}
 	
-	private int powerMultiplier(int techniquePower) {
+	private int powerMultiplier() {
 		if(this.attacker.getKills() != Utils.USELESS) { //Vincent with Death Penalty
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.attacker.getKills()});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getKills()});
 		}
 		else if(this.attacker.getWeaponAP() != Utils.USELESS) { //Barret with Missing Score
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.attacker.getWeaponAP()});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getWeaponAP()});
 		}
 		else if(this.attacker.getCurrentHp() != Utils.USELESS && this.attacker.getMaxHp() != Utils.USELESS) { //Cloud with Ultima Weapon or Cait Sith with HP Shout
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.attacker.getCurrentHp(), this.attacker.getMaxHp()});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getCurrentHp(), this.attacker.getMaxHp()});
 		}
 		else if(this.attacker.getCurrentMp() != Utils.USELESS && this.attacker.getMaxMp() != Utils.USELESS) { // Red XIII with Limited Moon or Cid with Venus Gospel
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.attacker.getCurrentMp(), this.attacker.getMaxMp()});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getCurrentMp(), this.attacker.getMaxMp()});
 		}
 		else if(this.target.getAverageLevel(this.attacker.toString()) != Utils.USELESS) { //Yuffie with Conformer
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.target.getAverageLevel(this.attacker.toString())});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.target.getAverageLevel(this.attacker.toString())});
 		}
 		else if(this.attacker.getLimitLevel() != Utils.USELESS && this.attacker.getLimitGauge() != Utils.USELESS) { //Tifa with Premium Heart
-			return this.attacker.getPowerModifier(techniquePower, new int[]{this.attacker.getLimitLevel(), this.attacker.getLimitGauge()});
+			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getLimitLevel(), this.attacker.getLimitGauge()});
 		}
 		else { //Aerith with Princess Guard and any character without his/her final weapon.
-			return this.attacker.getPowerModifier(techniquePower, null);
+			return this.attacker.getPowerModifier(this.techniquePower, null);
 		}
 	}
 	
@@ -253,7 +252,7 @@ public class Model extends Observable implements Observer {
 	}
 	
 	private int[] manageElementalAffinities(int min, int max, int actual) {
-		int targetElementalAffinityMultiplier = this.target.getElementalAffinities().get(this.attackElement);
+		double targetElementalAffinityMultiplier = this.target.getElementalAffinities().get(this.attackElement);
 		
 		System.out.println("The target has " + (targetElementalAffinityMultiplier != 1 ? "" : "no particular ") + "elemental affinities with " + this.attackElement.toString() + " element: elemental multiplier = " + formatNumber(targetElementalAffinityMultiplier));
 		
@@ -268,7 +267,7 @@ public class Model extends Observable implements Observer {
 		return new Integer(stat).toString();
 	}
 	
-	private void printStats(int techniquePower) {
+	private void printStats() {
 		String characterName = this.attacker.toString();
 		String weaponName = this.attacker.getWeapon().toString();
 		
@@ -282,12 +281,12 @@ public class Model extends Observable implements Observer {
 		System.out.println("Max MP: " + formatStat(characterName, weaponName, this.attacker.getMaxMp()));
 		System.out.println("Limit Level: " + formatStat(characterName, weaponName, this.attacker.getLimitLevel()));
 		System.out.println("Limit Bar Slots: " + formatStat(characterName, weaponName, this.attacker.getLimitGauge()));
-		System.out.println("Ap in the weapon: " + formatStat(characterName, weaponName, this.attacker.getWeaponAP()));
+		System.out.println("Effective APs in the weapon: " + formatStat(characterName, weaponName, this.attacker.getWeaponAP()));
 		System.out.println("Attack: " + formatStat(characterName, weaponName, this.attacker.getAttack()));
 		System.out.println(this.heroDrinksNumber + " hero drinks used: attack boosted by " + (this.heroDrinksNumber != 4 ? 3*this.heroDrinksNumber*10 : 100) + "%");
 		System.out.println("Boosted attack: " + formatStat(characterName, weaponName, this.attacker.getBoostedAttack()));
 		System.out.println("Number of enemies killed: " + formatStat(characterName, weaponName, this.attacker.getKills()));
-		System.out.println("Technique power: " + techniquePower);
+		System.out.println("Technique power: " + this.techniquePower);
 		System.out.println("Attack element: " + this.attackElement.toString());
 		System.out.println("##### End attacker stats #####\n");
 		System.out.println("##### Begin target stats #####");
@@ -319,15 +318,17 @@ public class Model extends Observable implements Observer {
 		System.out.println("\nHealing flag: " + (healingFlag ? "" : "not ") + "active. The target will be " + result + ".");
 	}
 	
-	public void calculateDamage(int techniquePower) {
+	public void calculateDamage() {
+		this.overflow = new Overflow();
+		
 		int modifiedAttack = (int)(this.attacker.getAttack() * (this.heroDrinksNumber != 4 ? 1 + ((double)(3*this.heroDrinksNumber))/10 : 2));
 		this.attacker.setBoostedAttack(modifiedAttack);
 		
-		printStats(techniquePower);
+		printStats();
 		
 		int attackMultiplier = attackMultiplier();
 		int defenseMultiplier = defenseMultiplier();
-		int powerMultiplier = powerMultiplier(techniquePower);
+		int powerMultiplier = powerMultiplier();
 		
 		printBaseMultipliers(attackMultiplier, defenseMultiplier, powerMultiplier);
 		
@@ -350,16 +351,82 @@ public class Model extends Observable implements Observer {
 		if(o instanceof Controller) {
 			if(arg instanceof Event) {
 				Event e = (Event) arg;
-				byte[] centerPanelData = (byte[]) (e.getParams()[0]);
-				byte[] rightPanelData = (byte[]) (e.getParams()[1]);
 				
-				constructModel(centerPanelData, rightPanelData);
-				//calculateDamage(100000);
+				if(e.getCode().equals(Events.DATA_FOR_MODEL)) {
+					byte[] centerPanelData = (byte[]) (e.getParams()[0]);
+					byte[] rightPanelData = (byte[]) (e.getParams()[1]);
+					
+					constructModel(centerPanelData, rightPanelData);
+					calculateDamage();
+				}
 			}
 		}
 	}
 
 	private void constructModel(byte[] centerPanelData, byte[] rightPanelData) {
-		// TODO Auto-generated method stub
+		byte characterCode = centerPanelData[0];
+		int level = Byte.valueOf(centerPanelData[1]).intValue();
+		int strength = Byte.valueOf(centerPanelData[2]).intValue();
+		boolean ultimateWeapon = centerPanelData[3] == (byte) 0x00;
+		this.techniquePower = Byte.valueOf(centerPanelData[4]).intValue();
+		this.attackElement = Utils.elements.get(centerPanelData[5]);
+		this.heroDrinksNumber = Byte.valueOf(centerPanelData[6]).intValue();
+		this.criticalHit = centerPanelData[7] == (byte) 0x01;
+		boolean berserk = centerPanelData[8] == (byte) 0x01;
+		Row attackerRow = centerPanelData[9] == (byte) 0x00 ? Row.BACK : Row.FRONT;
+		this.splitAttack = centerPanelData[10] == (byte) 0x01;
+		boolean frog = centerPanelData[11] == (byte) 0x01;
+		boolean mini = centerPanelData[12] == (byte) 0x01;
+		
+		int overhead = 0;
+		byte[] first = null;
+		byte[] second = null;
+		byte[] third = null;
+		
+		if(centerPanelData[13] == (byte) 0x01) {
+			int firstLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
+			overhead += 5;
+			first = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + firstLength);
+			overhead += firstLength;
+		}
+		
+		if(centerPanelData[13 + overhead] == (byte) 0x01) {
+			int secondLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
+			overhead += 5;
+			second = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + secondLength);
+			overhead += secondLength;
+		}
+		
+		if(centerPanelData[13 + overhead] == (byte) 0x01) {
+			int thirdLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
+			overhead += 5;
+			third = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + thirdLength);
+		}
+		
+		WeaponInterface weapon = WeaponsFactory.createWeapon(ultimateWeapon, characterCode, first, third);
+		this.attacker = CharacterFactory.createCharacter(characterCode, level, weapon, strength, first, second, berserk, frog, mini, attackerRow);
+	
+		int targetAverageLevel = Byte.valueOf(rightPanelData[0]).intValue();
+		int targetDefense = ByteBuffer.allocate(4).put(Arrays.copyOfRange(rightPanelData, 1, 5)).getInt(0);
+		boolean targetDefend = rightPanelData[5] == (byte) 0x01;
+		boolean targetSadness = rightPanelData[6] == (byte) 0x01;
+		boolean targetBarrier = rightPanelData[7] == (byte) 0x01;
+		boolean targetBack = rightPanelData[8] == (byte) 0x01;
+		int targetBackMultiplier = Byte.valueOf(rightPanelData[9]).intValue();
+		Row targetRow = rightPanelData[10] == (byte) 0x00 ? Row.BACK : Row.FRONT;
+		boolean absorbs = rightPanelData[11] == (byte) 0x01;
+		double elementMultiplier = Byte.valueOf(rightPanelData[12]).doubleValue();
+		
+		if(elementMultiplier == (double) 0x03) {
+			elementMultiplier = 0.5;
+		}
+		
+		Map<Elements, Double> affinities = new HashMap<Elements, Double>();
+		affinities.put(this.attackElement, elementMultiplier);
+		
+		Map<Elements, Boolean> absorbsMap = new HashMap<Elements, Boolean>();
+		absorbsMap.put(this.attackElement, absorbs);
+		
+		this.target = new Target(targetAverageLevel, targetDefense, targetRow, targetDefend, targetSadness, targetBarrier, targetBack, targetBackMultiplier, affinities, absorbsMap);
 	}
 }

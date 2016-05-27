@@ -25,6 +25,7 @@ public class RightPanel extends Observable implements Observer {
 	private int height;
 	private GridBagConstraints rightPanelGBC;
 	
+	private JScrollPane averageLevelScrollPane;
 	private JScrollPane defenseScrollPane;
 	private JScrollPane defendScrollPane;
 	private JScrollPane sadnessScrollPane;
@@ -35,6 +36,7 @@ public class RightPanel extends Observable implements Observer {
 	private JScrollPane elementAffinitiesScrollPane;
 	private JScrollPane elementMultiplierScrollPane;
 	
+	private JList<String> averageLevel;
 	private JList<String> defense;
 	private JList<String> defend;
 	private JList<String> sadness;
@@ -80,6 +82,7 @@ public class RightPanel extends Observable implements Observer {
 	}
 
 	private void addElements() {
+		addAverageLevelList();
 		addDefenseList();
 		addDefendList();
 		addSadnessList();
@@ -97,8 +100,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"0", "0.5", "1", "2"};
 		
 		this.elementMult = new JList<String>(data);
+		this.elementMult.setSelectedIndex(2);
 		this.elementMultiplierScrollPane = new JScrollPane(this.elementMult);
-		this.elementMultiplierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.elementMultiplierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Target multipier with attack element");
 		this.elementMultiplierScrollPane.setColumnHeaderView(header);
@@ -111,8 +115,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Absorbs", "Doesn't absorb"};
 		
 		this.elementAffinities = new JList<String>(data);
+		this.elementAffinities.setSelectedIndex(1);
 		this.elementAffinitiesScrollPane = new JScrollPane(this.elementAffinities);
-		this.elementAffinitiesScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.elementAffinitiesScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Target affinities with attack element");
 		this.elementAffinitiesScrollPane.setColumnHeaderView(header);
@@ -125,8 +130,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Front", "Back"};
 		
 		this.row = new JList<String>(data);
+		this.row.setSelectedIndex(0);
 		this.rowScrollPane = new JScrollPane(this.row);
-		this.rowScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.rowScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Which row is the target in?");
 		this.rowScrollPane.setColumnHeaderView(header);
@@ -139,8 +145,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"2", "4", "8"};
 		
 		this.backMult = new JList<String>(data);
+		this.backMult.setSelectedIndex(0);
 		this.backMultiplierScrollPane = new JScrollPane(this.backMult);
-		this.backMultiplierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.backMultiplierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Select target back attack multiplier");
 		this.backMultiplierScrollPane.setColumnHeaderView(header);
@@ -153,8 +160,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.back = new JList<String>(data);
+		this.back.setSelectedIndex(1);
 		this.backScrollPane = new JScrollPane(this.back);
-		this.backScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.backScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Is the target attacked on its back?");
 		this.backScrollPane.setColumnHeaderView(header);
@@ -167,8 +175,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.barrier = new JList<String>(data);
+		this.barrier.setSelectedIndex(1);
 		this.barrierScrollPane = new JScrollPane(this.barrier);
-		this.barrierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.barrierScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Is the target in barrier status?");
 		this.barrierScrollPane.setColumnHeaderView(header);
@@ -181,8 +190,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.sadness = new JList<String>(data);
+		this.sadness.setSelectedIndex(1);
 		this.sadnessScrollPane = new JScrollPane(this.sadness);
-		this.sadnessScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.sadnessScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Is the target in sadness status?");
 		this.sadnessScrollPane.setColumnHeaderView(header);
@@ -195,8 +205,9 @@ public class RightPanel extends Observable implements Observer {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.defend = new JList<String>(data);
+		this.defend.setSelectedIndex(1);
 		this.defendScrollPane = new JScrollPane(this.defend);
-		this.defendScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.defendScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Is the target defending?");
 		this.defendScrollPane.setColumnHeaderView(header);
@@ -213,14 +224,34 @@ public class RightPanel extends Observable implements Observer {
 		}
 		
 		this.defense = new JList<String>(data);
+		this.defense.setSelectedIndex(180);
 		this.defenseScrollPane = new JScrollPane(this.defense);
-		this.defenseScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/10));
+		this.defenseScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
 		
 		JLabel header = Utils.drawHeader("Select target defense");
 		this.defenseScrollPane.setColumnHeaderView(header);
 		
 		this.rightPanelGBC.gridy++;
 		this.rightPanel.add(this.defenseScrollPane, this.rightPanelGBC);
+	}
+	
+	private void addAverageLevelList() {
+		String[] data = new String[99];
+		
+		for(int i=1; i < 100; i++) {
+			data[i-1] = Integer.valueOf(i).toString();
+		}
+		
+		this.averageLevel = new JList<String>(data);
+		this.averageLevel.setSelectedIndex(98);
+		this.averageLevelScrollPane = new JScrollPane(this.averageLevel);
+		this.averageLevelScrollPane.setMinimumSize(new Dimension(5*this.width/6, this.height/12));
+		
+		JLabel header = Utils.drawHeader("Select target average level");
+		this.averageLevelScrollPane.setColumnHeaderView(header);
+		
+		this.rightPanelGBC.gridy++;
+		this.rightPanel.add(this.averageLevelScrollPane, this.rightPanelGBC);
 	}
 
 	@Override
@@ -240,13 +271,15 @@ public class RightPanel extends Observable implements Observer {
 			Event newEvent = new Event(Events.SENDING_RIGHT_PANEL_DATA, data);
 			
 			setChanged();
+			System.out.println("RightPanel: sending right panel data to controller...");
 			notifyObservers(newEvent);
 		}
 	}
 
 	private byte[] collectData() {
 		/*
-		 * target defense: 2 bytes (0x0000-0x0200)
+		 * target level: 1 byte (0x01-0x63)
+		 * target defense: 4 bytes (0x00000000-0x00000200)
 		 * target defending: 1 byte
 		 *  0x00 false, 0x01 true
 		 * target in sadness: 1 byte
@@ -265,10 +298,11 @@ public class RightPanel extends Observable implements Observer {
 		 *  0x00 0, 0x01 1, 0x02 2, 0x03 0.5
 		 */
 		
-		int length = 10;
+		int length = 13;
 		ByteBuffer dataBuffer = ByteBuffer.allocate(length);
 		
-		dataBuffer.put(Utils.stringToShortToByteArray(this.defense.getSelectedValue()));
+		dataBuffer.put(Utils.stringToHexToByte(this.averageLevel.getSelectedValue()));
+		dataBuffer.put(Utils.stringToIntToByteArray(this.defense.getSelectedValue()));
 		dataBuffer.put(Utils.stringToByteCode(this.defend.getSelectedValue()));
 		dataBuffer.put(Utils.stringToByteCode(this.sadness.getSelectedValue()));
 		dataBuffer.put(Utils.stringToByteCode(this.barrier.getSelectedValue()));

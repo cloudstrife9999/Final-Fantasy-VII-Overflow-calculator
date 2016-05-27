@@ -33,7 +33,9 @@ public class Controller extends Observable implements Observer {
 			Event newEvent = new Event(Events.RESULT_FOR_VIEW, e.getParams()[0]);
 			
 			setChanged();
+			System.out.println("Controller: sending results to View...");
 			notifyObservers(newEvent);
+			break;
 		}
 		default:
 		{
@@ -48,6 +50,7 @@ public class Controller extends Observable implements Observer {
 		case CHARACTER_CHANGED:
 		{
 			setChanged();
+			System.out.println("Controller: requesting CenterPanel to update itself due to a character change in the left panel...");
 			notifyObservers(new Event(Events.UPDATE_CENTER_PANEL, e.getParams()[0]));
 			break;
 		}
@@ -55,6 +58,7 @@ public class Controller extends Observable implements Observer {
 		{
 			this.centerPanelData = (byte[]) (e.getParams()[0]);
 			setChanged();
+			System.out.println("Controller: requesting data from RightPanel...");
 			notifyObservers(new Event(Events.PLEASE_SEND_RIGHT_PANEL_DATA, e.getParams()[0]));
 			break;
 		}
@@ -75,6 +79,7 @@ public class Controller extends Observable implements Observer {
 		Event e = new Event(Events.DATA_FOR_MODEL, this.centerPanelData, this.rightPanelData);
 		
 		setChanged();
+		System.out.println("Controller: sending data to Model ...");
 		notifyObservers(e);
 	}
 }

@@ -11,11 +11,11 @@ public class Target {
 	private boolean inBarrier;
 	private boolean backAttacked;
 	private int theoreticalBackAttackMultiplier;
-	private Map<Elements, Integer> elementalAffinities; //1 = no affinities, 2 = weak, 0.5 = half, 0 = immune
+	private Map<Elements, Double> elementalAffinities; //1 = no affinities, 2 = weak, 0.5 = half, 0 = immune
 	private Map<Elements, Boolean> elementalAbsorptions; //does target absorb elements?
 	
 	public Target(int averageLevel, int defense, Row row, boolean inDefenseMode, boolean inSadness, boolean inBarrier, boolean backAttacked,
-			int backAttackMultiplier, Map<Elements, Integer> elementalAffinities, Map<Elements, Boolean> elementalAbsorptions) {
+			int backAttackMultiplier, Map<Elements, Double> elementalAffinities, Map<Elements, Boolean> elementalAbsorptions) {
 		
 		this.averageLevel = Utils.sanitize(averageLevel, 1, 99, 99);
 		this.defense = defense;
@@ -30,7 +30,7 @@ public class Target {
 	}
 	
 	public int getAverageLevel(String attacker) {
-		return attacker.equals("YUFFIE KISARAGI") ? this.averageLevel : Utils.USELESS;
+		return attacker.equals("Yuffie Kisaragi") ? this.averageLevel : Utils.USELESS;
 	}
 	
 	public int getDefense() {
@@ -61,7 +61,7 @@ public class Target {
 		return this.theoreticalBackAttackMultiplier;
 	}
 	
-	public Map<Elements, Integer> getElementalAffinities() {
+	public Map<Elements, Double> getElementalAffinities() {
 		return this.elementalAffinities;
 	}
 	

@@ -113,6 +113,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 					swapCurrentCharacterSelection(oldCharacter, currentCharacter);
 					Event selectedCharacter = new Event(Events.CHARACTER_CHANGED, currentCharacter.getName());
 					setChanged();
+					System.out.println("View: sending new character selection to Controller...");
 					notifyObservers(selectedCharacter);
 				}
 
@@ -166,6 +167,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 		this.rightPanel = new RightPanel(width, height);
 		this.rightPanel.getRightPanel().setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		this.rightPanel.addObserver(this.controllerInstance);
+		this.controllerInstance.addObserver(this.rightPanel);
 		this.rightPanel.drawPanel();
 	}
 

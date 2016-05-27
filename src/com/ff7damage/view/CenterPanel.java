@@ -137,14 +137,15 @@ public class CenterPanel extends Observable {
 		
 		this.centerPanelGBC.gridy++;
 		
-		JButton confirm = new JButton("Calculate");
+		JButton confirm = new JButton("Calculate the damage");
 		confirm.addMouseListener(new MouseListener() {
 			
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				setChanged();
 				byte[] data = collectData();
 				Event event = new Event(Events.SENDING_CENTER_PANEL_DATA, data);
+				setChanged();
+				System.out.println("CenterPanel: sending center panel data to Controller...");
 				notifyObservers(event);
 			}
 			
@@ -205,10 +206,10 @@ public class CenterPanel extends Observable {
 		 */
 		
 		int firstAdditionalParameterLength = getFirstAdditionalParameterLength();
-		int firstAdditionalParameterTotalLength = 1 + firstAdditionalParameterLength != 0 ? 4 + firstAdditionalParameterLength : 0;
+		int firstAdditionalParameterTotalLength = 1 + (firstAdditionalParameterLength != 0 ? 4 + firstAdditionalParameterLength : 0);
 		
 		int secondAdditionalParameterLength = getSecondAdditionalParameterLength();
-		int secondAdditionalParameterTotalLength = 1 + secondAdditionalParameterLength != 0 ? 4 + secondAdditionalParameterLength : 0;
+		int secondAdditionalParameterTotalLength = 1 + (secondAdditionalParameterLength != 0 ? 4 + secondAdditionalParameterLength : 0);
 		
 		int thirdAdditionalParameterLength = getThirdAdditionalParameterLength();
 		int thirdAdditionalParameterTotalLength = 1 + thirdAdditionalParameterLength;
@@ -251,7 +252,7 @@ public class CenterPanel extends Observable {
 			}
 			else {
 				String index = Integer.valueOf(this.firstList.getSelectedIndex()).toString(); //it is correct
-				firstParameter = Utils.stringToShortToByteArray(index);
+				firstParameter = Utils.stringToIntToByteArray(index);
 			}
 			
 			data.put(firstParameter);
@@ -261,7 +262,7 @@ public class CenterPanel extends Observable {
 		
 		if(secondAdditionalParameterLength != 0) {
 			data.put(secondLength);
-			byte[] secondParameter = Utils.stringToIntToByteArray(this.secondList.getSelectedValue()); //ok for Tifa as well
+			byte[] secondParameter = Utils.stringToIntToByteArray(this.secondList.getSelectedValue());
 			data.put(secondParameter);
 		}
 		
@@ -277,22 +278,15 @@ public class CenterPanel extends Observable {
 	}
 
 	private int getThirdAdditionalParameterLength() {
-		return 1; //TODO implement non-ultimate weapons.
+		return 0; //TODO implement non-ultimate weapons.
 	}
 
 	private int getSecondAdditionalParameterLength() {
 		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof CaitSith ||
-				this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid) {
+				this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid ||
+				this.selectedCharacter instanceof Tifa) {
 				
-				return 2;
-			}
-			else if(this.selectedCharacter instanceof Tifa) {
-				return 1;
-			}
-			else if(this.selectedCharacter instanceof Yuffie || this.selectedCharacter instanceof Vincent ||
-					this.selectedCharacter instanceof Barret || this.selectedCharacter instanceof Aerith) {
-				
-				return 0;
+				return 4;
 			}
 			else {
 				return 0;
@@ -300,20 +294,11 @@ public class CenterPanel extends Observable {
 	}
 
 	private int getFirstAdditionalParameterLength() {
-		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof CaitSith ||
-			this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid ||
-			this.selectedCharacter instanceof Vincent || this.selectedCharacter instanceof Barret) {
-			
-			return 2;
-		}
-		else if(this.selectedCharacter instanceof Tifa || this.selectedCharacter instanceof Aerith) {
-			return 1;
-		}
-		else if(this.selectedCharacter instanceof Yuffie) {
+		if(this.selectedCharacter instanceof Yuffie) {
 			return 0;
 		}
 		else {
-			return 0;
+			return 4;
 		}
 	}
 
@@ -388,6 +373,7 @@ public class CenterPanel extends Observable {
 		String headerMessage = getSecondListHeaderMessage();
 		
 		this.secondList = new JList<String>(data);
+		this.secondList.setSelectedIndex(data.length - 1);
 		this.secondScrollPane = new JScrollPane(this.secondList);
 		this.secondScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -421,6 +407,7 @@ public class CenterPanel extends Observable {
 		String headerMessage = getFirstListHeaderMessage();
 		
 		this.firstList = new JList<String>(data);
+		this.firstList.setSelectedIndex(data.length - 1);
 		this.firstScrollPane = new JScrollPane(this.firstList);
 		this.firstScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -536,6 +523,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.mini = new JList<String>(data);
+		this.mini.setSelectedIndex(1);
 		this.miniScrollPane = new JScrollPane(this.mini);
 		this.miniScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -549,6 +537,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.frog = new JList<String>(data);
+		this.frog.setSelectedIndex(1);
 		this.frogScrollPane = new JScrollPane(this.frog);
 		this.frogScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -562,6 +551,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.split = new JList<String>(data);
+		this.split.setSelectedIndex(1);
 		this.splitScrollPane = new JScrollPane(this.split);
 		this.splitScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -575,6 +565,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Front", "Back"};
 		
 		this.row = new JList<String>(data);
+		this.row.setSelectedIndex(0);
 		this.rowScrollPane = new JScrollPane(this.row);
 		this.rowScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -588,6 +579,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.berserk = new JList<String>(data);
+		this.berserk.setSelectedIndex(0);
 		this.berserkScrollPane = new JScrollPane(this.berserk);
 		this.berserkScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -601,6 +593,7 @@ public class CenterPanel extends Observable {
 		String[] data = new String[]{"Yes", "No"};
 		
 		this.critical = new JList<String>(data);
+		this.critical.setSelectedIndex(0);
 		this.criticalScrollPane = new JScrollPane(this.critical);
 		this.criticalScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -618,6 +611,7 @@ public class CenterPanel extends Observable {
 		}
 		
 		this.heroDrink = new JList<String>(data);
+		this.heroDrink.setSelectedIndex(4);
 		this.heroDrinkScrollPane = new JScrollPane(this.heroDrink);
 		this.heroDrinkScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -632,6 +626,7 @@ public class CenterPanel extends Observable {
 				"Restorative", "Cut", "Hit", "Punch", "Shoot", "Shout", "Hidden", "Non-elemental"};
 		
 		this.element = new JList<String>(data);
+		this.element.setSelectedIndex(16);
 		this.elementScrollPane = new JScrollPane(this.element);
 		this.elementScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -649,6 +644,7 @@ public class CenterPanel extends Observable {
 		}
 		
 		this.power = new JList<String>(data);
+		this.power.setSelectedIndex(15);
 		this.powerScrollPane = new JScrollPane(this.power);
 		this.powerScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -666,6 +662,7 @@ public class CenterPanel extends Observable {
 		}
 		
 		this.strength = new JList<String>(data);
+		this.strength.setSelectedIndex(254);
 		this.strengthScrollPane = new JScrollPane(this.strength);
 		this.strengthScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -683,6 +680,7 @@ public class CenterPanel extends Observable {
 		}
 		
 		this.level = new JList<String>(data);
+		this.level.setSelectedIndex(98);
 		this.levelScrollPane = new JScrollPane(this.level);
 		this.levelScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -696,6 +694,7 @@ public class CenterPanel extends Observable {
 		String[] data = this.selectedCharacter.getWeapons();
 		
 		this.weapon = new JList<String>(data);
+		this.weapon.setSelectedIndex(0);
 		this.weaponScrollPane = new JScrollPane(this.weapon);
 		this.weaponScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -704,14 +703,4 @@ public class CenterPanel extends Observable {
 		this.weaponScrollPane.setColumnHeaderView(header);
 		this.firstLine.add(this.weaponScrollPane);
 	}
-	
-	/*private void drawList(String[] data, JScrollPane scroller, JList<String> list) {
-		list = new JList<String>(data);
-		scroller = new JScrollPane(list);
-		scroller.setPreferredSize(new Dimension(this.width/4, this.height/10));
-		
-		JLabel header = drawHeader("Select a weapon");
-		
-		scroller.setColumnHeaderView(header);
-	}*/
 }
