@@ -1,0 +1,21 @@
+*.class
+.classpath
+.settings/**
+.settings/*
+.settings/
+.project
+.directory
+bin/**
+bin/*
+bin
+*/.directory
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+hs_err_pid*

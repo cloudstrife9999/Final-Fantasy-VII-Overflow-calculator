@@ -1,0 +1,3 @@
+package com.ff7damage;
+
+public enum Elements {FIRE, ICE, LIGHTNING, EARTH, WIND, WATER, POISON, HOLY, GRAVITY, RESTORATIVE, CUT, HIT, PUNCH, SHOOT, SHOUT, HIDDEN}
