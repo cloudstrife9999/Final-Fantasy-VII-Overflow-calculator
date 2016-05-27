@@ -361,6 +361,5 @@ public class Model extends Observable implements Observer {
 
 	private void constructModel(byte[] centerPanelData, byte[] rightPanelData) {
 		// TODO Auto-generated method stub
-		
 	}
 }

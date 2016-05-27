@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.nio.ByteBuffer;
 import java.util.Observable;
 
 import javax.swing.JButton;
@@ -166,8 +167,154 @@ public class CenterPanel extends Observable {
 	}
 
 	protected byte[] collectData() {
-		// TODO Auto-generated method stub
-		return null;
+		/*
+		 * character: 1 byte
+		 * 	0x00 cloud, 0x01 barret, 0x02 tifa, 0x03 aerith, 0x04 red xiii, 0x05 yuffie, 0x06 cait sith, 0x07 vincent, 0x08 cid
+		 * level: 1 byte (0x01-0x63)
+		 * strength: 1 byte (0x00-0xFF)
+		 * weapon: 1 byte
+		 *  0x00 final weapon, 0x01 other weapon
+		 * technique power: 1 byte (0x01-0xFF)
+		 * attack element: 1 byte
+		 *  0x00 fire, 0x01 ice, 0x02 lightning, 0x03 earth, 0x04 wind, 0x05 water, 0x06 poison, 0x07 holy, 0x08 gravity,
+		 *  0x09 restorative, 0x0A cut, 0x0B hit, 0x0C punch, 0x0D shoot, 0x0E shout, 0x0F hidden, 0x10 non-elemental
+		 * hero drinks: 1 byte (0x00-0x04)
+		 * critical: 1 byte
+		 *  0x00 false, 0x01 true
+		 * breserk: 1 byte
+		 *  0x00 false, 0x01 true
+		 * attacker row: 1 byte
+		 *  0x00 back, 0x01 front
+		 * split attack: 1 byte
+		 *  0x00 false, 0x01 true
+		 * frog: 1 byte
+		 *  0x00 false, 0x01 true
+		 * mini: 1 byte
+		 *  0x00 false, 0x01 true
+		 * 1st additional parameter: 1 + 4? + x bytes
+		 *  1st byte: 0x00 useless, 0x01 useful
+		 *  2nd to 5th bytes: len(x) in binary or nothing if useless
+		 *  6th to (5 + x)th bytes: the parameter or nothing if useless
+		 * 2nd additional parameter: 1 + 4? + x bytes
+		 *  1st byte: 0x00 useless, 0x01 useful
+		 *  2nd to 5th bytes: len(x) in binary
+		 *  6th to (5 + x)th bytes: the parameter
+		 * 3rd additional parameter (weapon atk bonus if not final): 1 + 1? bytes
+		 * 	1st byte: 0x00 useless, 0x01 useful
+		 *  2nd byte: bonus atk value (0x00-0xFF) or nothing if useless
+		 */
+		
+		int firstAdditionalParameterLength = getFirstAdditionalParameterLength();
+		int firstAdditionalParameterTotalLength = 1 + firstAdditionalParameterLength != 0 ? 4 + firstAdditionalParameterLength : 0;
+		
+		int secondAdditionalParameterLength = getSecondAdditionalParameterLength();
+		int secondAdditionalParameterTotalLength = 1 + secondAdditionalParameterLength != 0 ? 4 + secondAdditionalParameterLength : 0;
+		
+		int thirdAdditionalParameterLength = getThirdAdditionalParameterLength();
+		int thirdAdditionalParameterTotalLength = 1 + thirdAdditionalParameterLength;
+		
+		int totalLength = 13 + firstAdditionalParameterTotalLength + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength;
+		
+		ByteBuffer data = ByteBuffer.allocate(totalLength);
+		data.put(Utils.characterWrapperToCode(this.selectedCharacter));
+		data.put(Utils.stringToHexToByte(this.level.getSelectedValue()));
+		data.put(Utils.stringToHexToByte(this.strength.getSelectedValue()));
+		data.put(Utils.getWeaponCode(this.weapon.getSelectedValue()));
+		data.put(Utils.stringToHexToByte(this.power.getSelectedValue()));
+		data.put(Utils.elementToCode(this.element.getSelectedValue()));
+		data.put(Utils.stringToHexToByte(this.heroDrink.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.critical.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.berserk.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.row.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.split.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.frog.getSelectedValue()));
+		data.put(Utils.stringToByteCode(this.mini.getSelectedValue()));
+		
+		byte first = (byte) (firstAdditionalParameterLength == 0 ? 0x00 : 0x01);
+		byte[] firstLength = ByteBuffer.allocate(4).putInt(firstAdditionalParameterLength).array();
+		
+		byte second = (byte) (secondAdditionalParameterLength == 0 ? 0x00 : 0x01);
+		byte[] secondLength = ByteBuffer.allocate(4).putInt(secondAdditionalParameterLength).array();
+		
+		byte third = (byte) (thirdAdditionalParameterLength == 0 ? 0x00 : 0x01);
+		byte[] thirdLength = ByteBuffer.allocate(4).putInt(thirdAdditionalParameterLength).array();
+		
+		data.put(first);
+		
+		if(firstAdditionalParameterLength != 0) {
+			data.put(firstLength);
+			
+			byte[] firstParameter;
+			
+			if(!(this.selectedCharacter instanceof Barret)) {
+				firstParameter = Utils.stringToIntToByteArray(this.firstList.getSelectedValue());
+			}
+			else {
+				String index = Integer.valueOf(this.firstList.getSelectedIndex()).toString(); //it is correct
+				firstParameter = Utils.stringToShortToByteArray(index);
+			}
+			
+			data.put(firstParameter);
+		}
+		
+		data.put(second);
+		
+		if(secondAdditionalParameterLength != 0) {
+			data.put(secondLength);
+			byte[] secondParameter = Utils.stringToIntToByteArray(this.secondList.getSelectedValue()); //ok for Tifa as well
+			data.put(secondParameter);
+		}
+		
+		data.put(third);
+		
+		if(thirdAdditionalParameterLength != 0) {
+			data.put(thirdLength);
+			byte thirdParameter = 0x00;
+			data.put(thirdParameter);
+		}
+		
+		return data.array();
+	}
+
+	private int getThirdAdditionalParameterLength() {
+		return 1; //TODO implement non-ultimate weapons.
+	}
+
+	private int getSecondAdditionalParameterLength() {
+		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof CaitSith ||
+				this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid) {
+				
+				return 2;
+			}
+			else if(this.selectedCharacter instanceof Tifa) {
+				return 1;
+			}
+			else if(this.selectedCharacter instanceof Yuffie || this.selectedCharacter instanceof Vincent ||
+					this.selectedCharacter instanceof Barret || this.selectedCharacter instanceof Aerith) {
+				
+				return 0;
+			}
+			else {
+				return 0;
+			}
+	}
+
+	private int getFirstAdditionalParameterLength() {
+		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof CaitSith ||
+			this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid ||
+			this.selectedCharacter instanceof Vincent || this.selectedCharacter instanceof Barret) {
+			
+			return 2;
+		}
+		else if(this.selectedCharacter instanceof Tifa || this.selectedCharacter instanceof Aerith) {
+			return 1;
+		}
+		else if(this.selectedCharacter instanceof Yuffie) {
+			return 0;
+		}
+		else {
+			return 0;
+		}
 	}
 
 	private void drawFirstLine() {

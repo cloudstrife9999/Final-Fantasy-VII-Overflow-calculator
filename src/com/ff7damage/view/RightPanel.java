@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.nio.ByteBuffer;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -244,7 +245,39 @@ public class RightPanel extends Observable implements Observer {
 	}
 
 	private byte[] collectData() {
-		// TODO Auto-generated method stub
-		return null;
+		/*
+		 * target defense: 2 bytes (0x0000-0x0200)
+		 * target defending: 1 byte
+		 *  0x00 false, 0x01 true
+		 * target in sadness: 1 byte
+		 *  0x00 false, 0x01 true
+		 * target in barrier: 1 byte
+		 *  0x00 false, 0x01 true
+		 * target back attacked: 1 byte
+		 *  0x00 false, 0x01 true
+		 * target back attack multiplier: 1 byte
+		 *  0x02, 0x04, 0x08
+		 * target row: 1 byte
+		 *  0x00 back, 0x01 front
+		 * elemental affinities: 1 byte
+		 *  0x00 doesn't absorb, 0x01 absorbs
+		 * elemental multiplier: 1 byte
+		 *  0x00 0, 0x01 1, 0x02 2, 0x03 0.5
+		 */
+		
+		int length = 10;
+		ByteBuffer dataBuffer = ByteBuffer.allocate(length);
+		
+		dataBuffer.put(Utils.stringToShortToByteArray(this.defense.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.defend.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.sadness.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.barrier.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.back.getSelectedValue()));
+		dataBuffer.put(Utils.stringToHexToByte(this.backMult.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.row.getSelectedValue()));
+		dataBuffer.put(Utils.stringToByteCode(this.elementAffinities.getSelectedValue()));
+		dataBuffer.put(Utils.getElementalMultiplier(this.elementMult.getSelectedValue()));
+		
+		return dataBuffer.array();
 	}
 }
