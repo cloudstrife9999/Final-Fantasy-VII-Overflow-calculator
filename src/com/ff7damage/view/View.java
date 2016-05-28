@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
@@ -75,6 +76,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 		
 		this.main.pack();
 		this.main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.main.setExtendedState(JFrame.MAXIMIZED_BOTH); 
 		this.main.setVisible(true);
 	}
 	
@@ -262,6 +264,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 		this.results.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.results.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.results.pack();
+		this.results.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width)/2 - this.results.getWidth()/2, (Toolkit.getDefaultToolkit().getScreenSize().height)/2 - this.results.getHeight()/2);
 		this.results.setVisible(true);
 	}
 

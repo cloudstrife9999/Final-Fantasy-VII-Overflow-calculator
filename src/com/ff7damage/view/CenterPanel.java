@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.Dialog.ModalityType;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -175,6 +176,7 @@ public class CenterPanel extends Observable {
 		this.aboutDialog.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.aboutDialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.aboutDialog.pack();
+		this.aboutDialog.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width)/2 - this.aboutDialog.getWidth()/2, (Toolkit.getDefaultToolkit().getScreenSize().height)/2 - this.aboutDialog.getHeight()/2);
 		this.aboutDialog.setVisible(true);
 	}
 	
