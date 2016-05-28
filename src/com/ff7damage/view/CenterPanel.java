@@ -5,12 +5,15 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.nio.ByteBuffer;
 import java.util.Observable;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -71,6 +74,9 @@ public class CenterPanel extends Observable {
 	
 	private ByteBuffer data;
 	
+	private JDialog aboutDialog;
+	private JPanel aboutPanel;
+	
 	
 	public CenterPanel(int width, int height) {
 		this.width = width;
@@ -125,8 +131,99 @@ public class CenterPanel extends Observable {
 		drawFifthLine();
 		
 		addButton();
+		addAboutButton();
 		
 		this.centerPanel.repaint();
+	}
+
+	private void addAboutButton() {
+		JButton about = new JButton("About");
+		about.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				createAboutDialog();
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+		});
+		
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(about, this.centerPanelGBC);
+	}
+
+	private void createAboutDialog() {
+		this.aboutDialog = new JDialog();
+		this.aboutDialog.setTitle("About");
+		this.aboutDialog.setPreferredSize(new Dimension(2*this.width/3, this.height/5));
+		
+		createAboutPanel();
+		
+		this.aboutDialog.add(this.aboutPanel);
+		this.aboutDialog.setModal(true);
+		this.aboutDialog.setAlwaysOnTop(true);
+		this.aboutDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+		this.aboutDialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.aboutDialog.pack();
+		this.aboutDialog.setVisible(true);
+	}
+	
+	private void createAboutPanel() {
+		this.aboutPanel = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		
+		String[] message = new String[]{
+				"Final Fantasy VII damage and overflow calculator",
+				"Version 1.0, 28 May 2016",
+				"by Cloudstrife9999 a.k.a. Emanuele Uliana",
+				"Computer engineer (bachelor and master) at Politecnico di Milano",
+				"Computer Science PhD student at Royal Holloway University of London"
+		};
+		
+		gbc.gridy = 0;
+		
+		for(String s : message) {
+			this.aboutPanel.add(new JLabel(s), gbc);
+			gbc.gridy++;
+		}
+		
+		addClosingButton(gbc);
+	}
+
+	private void addClosingButton(GridBagConstraints gbc) {
+		JButton button = new JButton("Close");
+		button.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				aboutDialog.dispose();
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent arg0) {}
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {}
+			
+			@Override
+			public void mouseExited(MouseEvent arg0) {}
+			
+			@Override
+			public void mouseEntered(MouseEvent arg0) {}	
+		});
+		
+		gbc.insets = new Insets(20, 20 , 20 , 20);
+		this.aboutPanel.add(button, gbc);
 	}
 
 	private void addButton() {

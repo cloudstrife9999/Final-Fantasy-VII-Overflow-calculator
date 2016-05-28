@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -93,7 +94,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 		this.leftPanel.add(leftPanelTitle, leftPanelConstraints);
 		
 		String[] names = new String[]{"cloud", "barret", "tifa", "aerith", "red", "yuffie", "cait", "vincent", "cid"};
-		String[] iconPaths = new String[]{"res/cloud.png", "res/barret.png", "res/tifa.png", "res/aerith.png", "res/red.png", "res/yuffie.png", "res/cait.png", "res/vincent.png", "res/cid.png"};
+		String[] iconPaths = new String[]{"cloud.png", "barret.png", "tifa.png", "aerith.png", "red.png", "yuffie.png", "cait.png", "vincent.png", "cid.png"};
 		JLabel[] characters = new JLabel[9];
 		
 		populateLeftPanel(names, iconPaths, characters, leftPanelConstraints);
@@ -159,7 +160,8 @@ public class View extends Observable implements Observer, VisitorInterface {
 	}
 
 	private JLabel createCharacterLabel(String name, String iconPath) {
-		JLabel character = new JLabel(new ImageIcon(iconPath));
+		URL url = View.class.getResource("/images/" + iconPath);
+		JLabel character = new JLabel(new ImageIcon(url));
 		character.setName(name);
 		
 		return character;
@@ -255,9 +257,9 @@ public class View extends Observable implements Observer, VisitorInterface {
 		
 		this.results.add(this.resultsScrollPane);
 		
-		this.results.setModal (true);
-		this.results.setAlwaysOnTop (true);
-		this.results.setModalityType (ModalityType.APPLICATION_MODAL);
+		this.results.setModal(true);
+		this.results.setAlwaysOnTop(true);
+		this.results.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.results.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.results.pack();
 		this.results.setVisible(true);
