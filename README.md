@@ -9,3 +9,5 @@ Implement all the non-ultimate weapons.
 Refactor the code (this was a rush job).
 
 Fix a possible error in the RV overflows count (possible switch between AOV and OV when BD is negative).
+
+Implement MP damage (i.e., blood fang/hammer blow)
