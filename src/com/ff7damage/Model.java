@@ -30,7 +30,7 @@ public class Model extends Observable implements Observer {
 	private Random random;
 	private Overflow overflow;
 	
-	private byte[] resultsForController;
+	private List<String> resultsForController;
 	
 	public Model() {
 		this.random = new SecureRandom();
@@ -153,10 +153,10 @@ public class Model extends Observable implements Observer {
 		this.overflow.setOverflowableBDNumerator(tmp);
 		this.overflow.calculateBDOverflows();
 				
-		System.out.println("Possible base damage overflow: numerator = " + tmp);
-		System.out.println("Numerator without overflow would be: " + bigTmp.toString());
-		System.out.println(this.overflow.getBdOverflows()[0] + " overflows and " + this.overflow.getBdOverflows()[1] + " anti-overflows happened during base damage calculation.");
-		System.out.println("Hence base damage will be " + (this.overflow.isBdPositive() ? "positive" : "negative") + ".");
+		this.resultsForController.add("Possible base damage overflow: numerator = " + tmp);
+		this.resultsForController.add("Numerator without overflow would be: " + bigTmp.toString());
+		this.resultsForController.add(this.overflow.getBdOverflows()[0] + " overflows and " + this.overflow.getBdOverflows()[1] + " anti-overflows happened during base damage calculation.");
+		this.resultsForController.add("Hence base damage will be " + (this.overflow.isBdPositive() ? "positive" : "negative") + ".");
 		
 		return divide(tmp, 16*512);
 	}
@@ -171,37 +171,39 @@ public class Model extends Observable implements Observer {
 	}
 	
 	private void printModifiers() {
-		System.out.println("\n##### Begin modifiers #####");
-		System.out.println("The attack is " + (this.criticalHit ? "" : "not ") + "a critical hit: critical multiplier = " + criticalMultiplier());
-		System.out.println("The attacker is " + (this.attacker.isBerserked() ? "" : "not ") + "in berserk: berserk status multiplier = " + formatNumber(berserkMultiplier()));
-		System.out.println("The attacker is in " + (this.attacker.getRow().equals(Row.BACK) ? "back" : "front") + " row and the target is in " + (this.target.getRow().equals(Row.BACK) ? "back" : "front") + " row: row multiplier = " + formatNumber(rowMultiplier()));
-		System.out.println("The target is " + (this.target.isInDefenseMode() ? "" : "not ") + "in defense position: defense position multiplier = " + formatNumber(defenseStatusMultiplier()));
-		System.out.println("The target is " + (this.target.isBackAttacked() ? "" : "not ") + "being attacked on his back: back attack multiplier = " + backMultiplier());
-		System.out.println("The attacker is " + (this.attacker.isInFrog() ? "" : "not ") + "in frog status: frog status multiplier = " + formatNumber(frogMultiplier()));
-		System.out.println("The target is " + (this.target.isInSadness() ? "" : "not ") + "in sadness status: sadness status multiplier = " + formatNumber(sadnessMultiplier()));
-		System.out.println("The attack is direct towards " + (this.splitAttack ? "a single target " : "multiple targets ") + ": split multiplier = " + formatNumber(splitMultiplier()));
-		System.out.println("The target is " + (this.target.isInBarrier() ? "" : "not ") + "in barrier status: barrier multiplier = " + formatNumber(barrierMultiplier()));
-		System.out.println("The attacker is " + (this.attacker.isInMini() ? "" : "not ") + "in mini status: mini multiplier = " + miniMultiplier());
-		System.out.println("##### End modifiers #####\n");
+		this.resultsForController.add(" ");
+		this.resultsForController.add("##### Begin modifiers #####");
+		this.resultsForController.add("The attack is " + (this.criticalHit ? "" : "not ") + "a critical hit: critical multiplier = " + criticalMultiplier());
+		this.resultsForController.add("The attacker is " + (this.attacker.isBerserked() ? "" : "not ") + "in berserk: berserk status multiplier = " + formatNumber(berserkMultiplier()));
+		this.resultsForController.add("The attacker is in " + (this.attacker.getRow().equals(Row.BACK) ? "back" : "front") + " row and the target is in " + (this.target.getRow().equals(Row.BACK) ? "back" : "front") + " row: row multiplier = " + formatNumber(rowMultiplier()));
+		this.resultsForController.add("The target is " + (this.target.isInDefenseMode() ? "" : "not ") + "in defense position: defense position multiplier = " + formatNumber(defenseStatusMultiplier()));
+		this.resultsForController.add("The target is " + (this.target.isBackAttacked() ? "" : "not ") + "being attacked on his back: back attack multiplier = " + backMultiplier());
+		this.resultsForController.add("The attacker is " + (this.attacker.isInFrog() ? "" : "not ") + "in frog status: frog status multiplier = " + formatNumber(frogMultiplier()));
+		this.resultsForController.add("The target is " + (this.target.isInSadness() ? "" : "not ") + "in sadness status: sadness status multiplier = " + formatNumber(sadnessMultiplier()));
+		this.resultsForController.add("The attack is direct towards " + (this.splitAttack ? "a single target " : "multiple targets ") + ": split multiplier = " + formatNumber(splitMultiplier()));
+		this.resultsForController.add("The target is " + (this.target.isInBarrier() ? "" : "not ") + "in barrier status: barrier multiplier = " + formatNumber(barrierMultiplier()));
+		this.resultsForController.add("The attacker is " + (this.attacker.isInMini() ? "" : "not ") + "in mini status: mini multiplier = " + miniMultiplier());
+		this.resultsForController.add("##### End modifiers #####");
+		this.resultsForController.add(" ");
 	}
 	
 	private void printVarianceModification(int adjustedBaseDamage, int randomNumerator, int minNumerator, int maxNumerator, int numerator, BigInteger fullNumerator) {
-		System.out.println("Base damage after modifiers and before random variance: " + adjustedBaseDamage);
-		System.out.println("Random variance = " + randomNumerator + "/4096 = " + (double)randomNumerator/(double)4096);
-		System.out.println("Possible random variance overflow: minimum numerator (if random variance numerator = 3841) = " + minNumerator);
-		System.out.println("Possible random variance overflow: maximum numerator (if random variance numerator = 4096) = " + maxNumerator);
-		System.out.println("Possible random variance overflow: actual numerator = " + numerator);
-		System.out.println("The non-overflowable numerator would be = " + fullNumerator.toString());
-		System.out.println("Base damage was " + (this.overflow.isBdPositive() ? "positive" : "negative") + ", so the first overflow which may happen here is " + (this.overflow.isBdPositive() ? "a classic overflow" : "an anti-overflow") + ".");
+		this.resultsForController.add("Base damage after modifiers and before random variance: " + adjustedBaseDamage);
+		this.resultsForController.add("Random variance = " + randomNumerator + "/4096 = " + (double)randomNumerator/(double)4096);
+		this.resultsForController.add("Possible random variance overflow: minimum numerator (if random variance numerator = 3841) = " + minNumerator);
+		this.resultsForController.add("Possible random variance overflow: maximum numerator (if random variance numerator = 4096) = " + maxNumerator);
+		this.resultsForController.add("Possible random variance overflow: actual numerator = " + numerator);
+		this.resultsForController.add("The non-overflowable numerator would be = " + fullNumerator.toString());
+		this.resultsForController.add("Base damage was " + (this.overflow.isBdPositive() ? "positive" : "negative") + ", so the first overflow which may happen here is " + (this.overflow.isBdPositive() ? "a classic overflow" : "an anti-overflow") + ".");
 		
 		if(this.overflow.isBdPositive()) {
-			System.out.println(this.overflow.getPositiveBDrvOverflows()[0] + " overflows and " + this.overflow.getPositiveBDrvOverflows()[1] + " anti-overflows happened while applying random variance.");
+			this.resultsForController.add(this.overflow.getPositiveBDrvOverflows()[0] + " overflows and " + this.overflow.getPositiveBDrvOverflows()[1] + " anti-overflows happened while applying random variance.");
 		}
 		else {
-			System.out.println(this.overflow.getNegativeBDrvOverflows()[0] + " anti-overflows and " + this.overflow.getNegativeBDrvOverflows()[1] + " overflows happened while applying random variance.");
+			this.resultsForController.add(this.overflow.getNegativeBDrvOverflows()[0] + " anti-overflows and " + this.overflow.getNegativeBDrvOverflows()[1] + " overflows happened while applying random variance.");
 		}
 		
-		System.out.println("After all the possible overflows the final damage will be " + (this.overflow.isAfterRVDamagePositive() ? "positive" : "negative") + ".");
+		this.resultsForController.add("After all the possible overflows the final damage will be " + (this.overflow.isAfterRVDamagePositive() ? "positive" : "negative") + ".");
 	}
 	
 	private int[] finalDamage(int bd) {
@@ -240,7 +242,7 @@ public class Model extends Observable implements Observer {
 		
 		if(!postVarianceMultipliers.isEmpty()) {
 			for(Double multiplier : postVarianceMultipliers) {
-				System.out.println("Found post-variance multiplier in the weapon with value = " + formatNumber(multiplier.doubleValue()));
+				this.resultsForController.add("Found post-variance multiplier in the weapon with value = " + formatNumber(multiplier.doubleValue()));
 				
 				min *= multiplier;
 				max *= multiplier;
@@ -252,7 +254,7 @@ public class Model extends Observable implements Observer {
 			actual = (int) Math.floor(actual);
 		}
 		else {
-			System.out.println("There are no post-variance multipliers in the weapon.");
+			this.resultsForController.add("There are no post-variance multipliers in the weapon.");
 		}
 		
 		return manageElementalAffinities(min, max, actual);
@@ -261,7 +263,7 @@ public class Model extends Observable implements Observer {
 	private int[] manageElementalAffinities(int min, int max, int actual) {
 		double targetElementalAffinityMultiplier = this.target.getElementalAffinities().get(this.attackElement);
 		
-		System.out.println("The target has " + (targetElementalAffinityMultiplier != 1 ? "" : "no particular ") + "elemental affinities with " + this.attackElement.toString() + " element: elemental multiplier = " + formatNumber(targetElementalAffinityMultiplier));
+		this.resultsForController.add("The target has " + (targetElementalAffinityMultiplier != 1 ? "" : "no particular ") + "elemental affinities with " + this.attackElement.toString() + " element: elemental multiplier = " + formatNumber(targetElementalAffinityMultiplier));
 		
 		return  new int[]{(int)(min * targetElementalAffinityMultiplier), (int)(max * targetElementalAffinityMultiplier), (int)(actual * targetElementalAffinityMultiplier)};
 	}
@@ -278,55 +280,60 @@ public class Model extends Observable implements Observer {
 		String characterName = this.attacker.toString();
 		String weaponName = this.attacker.getWeapon().toString();
 		
-		System.out.println("##### Begin attacker stats #####");
-		System.out.println("Attacker: " + characterName);
-		System.out.println("Weapon: " + weaponName);
-		System.out.println("Level: " + formatStat(characterName, weaponName, this.attacker.getLevel()));
-		System.out.println("Current HP: " + formatStat(characterName, weaponName, this.attacker.getCurrentHp()));
-		System.out.println("Max HP: " + formatStat(characterName, weaponName, this.attacker.getMaxHp()));
-		System.out.println("Current MP: " + formatStat(characterName, weaponName, this.attacker.getCurrentMp()));
-		System.out.println("Max MP: " + formatStat(characterName, weaponName, this.attacker.getMaxMp()));
-		System.out.println("Limit Level: " + formatStat(characterName, weaponName, this.attacker.getLimitLevel()));
-		System.out.println("Limit Bar Slots: " + formatStat(characterName, weaponName, this.attacker.getLimitGauge()));
-		System.out.println("Effective APs in the weapon: " + formatStat(characterName, weaponName, this.attacker.getWeaponAP()));
-		System.out.println("Attack: " + formatStat(characterName, weaponName, this.attacker.getAttack()));
-		System.out.println(this.heroDrinksNumber + " hero drinks used: attack boosted by " + (this.heroDrinksNumber != 4 ? 3*this.heroDrinksNumber*10 : 100) + "%");
-		System.out.println("Boosted attack: " + formatStat(characterName, weaponName, this.attacker.getBoostedAttack()));
-		System.out.println("Number of enemies killed: " + formatStat(characterName, weaponName, this.attacker.getKills()));
-		System.out.println("Technique power: " + this.techniquePower);
-		System.out.println("Attack element: " + this.attackElement.toString());
-		System.out.println("##### End attacker stats #####\n");
-		System.out.println("##### Begin target stats #####");
-		System.out.println("Target average level: " + formatStat(characterName, weaponName, this.target.getAverageLevel(characterName)));
-		System.out.println("Target defense stat: " + this.target.getDefense());
-		System.out.println("##### End target stats #####\n");
+		this.resultsForController.add("##### Begin attacker stats #####");
+		this.resultsForController.add("Attacker: " + characterName);
+		this.resultsForController.add("Weapon: " + weaponName);
+		this.resultsForController.add("Level: " + formatStat(characterName, weaponName, this.attacker.getLevel()));
+		this.resultsForController.add("Current HP: " + formatStat(characterName, weaponName, this.attacker.getCurrentHp()));
+		this.resultsForController.add("Max HP: " + formatStat(characterName, weaponName, this.attacker.getMaxHp()));
+		this.resultsForController.add("Current MP: " + formatStat(characterName, weaponName, this.attacker.getCurrentMp()));
+		this.resultsForController.add("Max MP: " + formatStat(characterName, weaponName, this.attacker.getMaxMp()));
+		this.resultsForController.add("Limit Level: " + formatStat(characterName, weaponName, this.attacker.getLimitLevel()));
+		this.resultsForController.add("Limit Bar Slots: " + formatStat(characterName, weaponName, this.attacker.getLimitGauge()));
+		this.resultsForController.add("Effective APs in the weapon: " + formatStat(characterName, weaponName, this.attacker.getWeaponAP()));
+		this.resultsForController.add("Attack: " + formatStat(characterName, weaponName, this.attacker.getAttack()));
+		this.resultsForController.add(this.heroDrinksNumber + " hero drinks used: attack boosted by " + (this.heroDrinksNumber != 4 ? 3*this.heroDrinksNumber*10 : 100) + "%");
+		this.resultsForController.add("Boosted attack: " + formatStat(characterName, weaponName, this.attacker.getBoostedAttack()));
+		this.resultsForController.add("Number of enemies killed: " + formatStat(characterName, weaponName, this.attacker.getKills()));
+		this.resultsForController.add("Technique power: " + this.techniquePower);
+		this.resultsForController.add("Attack element: " + this.attackElement.toString());
+		this.resultsForController.add("##### End attacker stats #####");
+		this.resultsForController.add(" ");
+		this.resultsForController.add("##### Begin target stats #####");
+		this.resultsForController.add("Target average level: " + formatStat(characterName, weaponName, this.target.getAverageLevel(characterName)));
+		this.resultsForController.add("Target defense stat: " + this.target.getDefense());
+		this.resultsForController.add("##### End target stats #####");
+		this.resultsForController.add(" ");
 	}
 	
 	private void printBaseMultipliers(int attackMultiplier, int defenseMultiplier, int powerMultiplier) {
-		System.out.println("Attack multiplier = " + attackMultiplier);
-		System.out.println("Defense multiplier = " + defenseMultiplier);
-		System.out.println("Power multiplier = " + powerMultiplier + (this.limit ? ", which is weapon-independent because " + Utils.getLimitName(this.attacker, this.limitCode) + " is being used." : ""));
+		this.resultsForController.add("Attack multiplier = " + attackMultiplier);
+		this.resultsForController.add("Defense multiplier = " + defenseMultiplier);
+		this.resultsForController.add("Power multiplier = " + powerMultiplier + (this.limit ? ", which is weapon-independent because " + Utils.getLimitName(this.attacker, this.limitCode) + " is being used." : ""));
 	}
 	
 	private void printFinalDamage(int[] finalDamage) {
-		System.out.println("\nMin final damage uncapped: " + finalDamage[0]);
-		System.out.println("Min final damage capped (max 9999): " + Math.min(9999, finalDamage[0]));
-		System.out.println("Max final damage uncapped: " + finalDamage[1]);
-		System.out.println("Max final damage capped (max 9999): " + Math.min(9999, finalDamage[1]));
-		System.out.println("Actual final damage uncapped: " + finalDamage[2]);
-		System.out.println("Actual final damage capped (real damage, max 9999): " + Math.min(9999, finalDamage[2]));
-		System.out.println("The final result is that the damage overflow glitch has " + (!this.overflow.isAfterRVDamagePositive() ? "" : "not ") + "been triggered.");
+		this.resultsForController.add(" ");
+		this.resultsForController.add("Min final damage uncapped: " + finalDamage[0]);
+		this.resultsForController.add("Min final damage capped (max 9999): " + Math.min(9999, finalDamage[0]));
+		this.resultsForController.add("Max final damage uncapped: " + finalDamage[1]);
+		this.resultsForController.add("Max final damage capped (max 9999): " + Math.min(9999, finalDamage[1]));
+		this.resultsForController.add("Actual final damage uncapped: " + finalDamage[2]);
+		this.resultsForController.add("Actual final damage capped (real damage, max 9999): " + Math.min(9999, finalDamage[2]));
+		this.resultsForController.add("The final result is that the damage overflow glitch has " + (!this.overflow.isAfterRVDamagePositive() ? "" : "not ") + "been triggered.");
 	}
 	
 	public void printHealingCheck() {
 		boolean healingFlag = this.target.getElementalAbsorptions().get(this.attackElement);
 		
 		String result = !this.overflow.isAfterRVDamagePositive() ? healingFlag ? "fully healed" : "instantly killed" : healingFlag ? "healed by the capped final damage amount" : "damaged by the capped final damage amount";
-		System.out.println("\nHealing flag: " + (healingFlag ? "" : "not ") + "active. The target will be " + result + ".");
+		this.resultsForController.add("");
+		this.resultsForController.add("Healing flag: " + (healingFlag ? "" : "not ") + "active. The target will be " + result + ".");
 	}
 	
 	public void calculateDamage() {
 		this.overflow = new Overflow();
+		this.resultsForController = new ArrayList<String>();
 		
 		int modifiedAttack = (int)(this.attacker.getAttack() * (this.heroDrinksNumber != 4 ? 1 + ((double)(3*this.heroDrinksNumber))/10 : 2));
 		this.attacker.setBoostedAttack(modifiedAttack);
@@ -340,7 +347,7 @@ public class Model extends Observable implements Observer {
 		printBaseMultipliers(attackMultiplier, defenseMultiplier, powerMultiplier);
 		
 		int baseDamage = baseDamage(powerMultiplier, defenseMultiplier, attackMultiplier);
-		System.out.println("Base damage: " + baseDamage);
+		this.resultsForController.add("Base damage: " + baseDamage);
 		
 		int[] finalDamage = finalDamage(baseDamage);
 		

@@ -2,17 +2,22 @@ package com.ff7damage.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,6 +39,10 @@ public class View extends Observable implements Observer, VisitorInterface {
 	private JScrollPane left;
 	private JScrollPane center;
 	private JScrollPane right;
+	private JDialog results;
+	private JScrollPane resultsScrollPane;
+	private JPanel resultsPanel;
+	private List<String> res;
 	
 	public View(Controller instance) {
 		this.currentCharacter = null;
@@ -49,6 +58,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 		this.main.setSize(new Dimension(2048, 1024));
 		BorderLayout mainLayout = new BorderLayout();
 		this.main.setLayout(mainLayout);
+		this.main.setTitle("Final Fantasy VII damage and overflow calculator");
 		
 		createLeftPanel(this.main.getWidth()/10, this.main.getHeight());
 		createCenterPanel(6*this.main.getWidth()/10, this.main.getHeight());
@@ -68,17 +78,7 @@ public class View extends Observable implements Observer, VisitorInterface {
 	}
 	
 	private void createLeftPanel(int width, int height) {
-		this.leftPanel = new JPanel() {
-			private static final long serialVersionUID = 7127669893485044937L;
-
-			public Dimension getPreferredSize() {
-			      return new Dimension(width, height);
-			};
-			
-			public Dimension getMinimumSize() {
-			      return new Dimension(width, height);
-			};
-		};
+		instantiateLeftPanel(width, height);
 		
 		this.leftPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		this.leftPanel.setLayout(new GridBagLayout());
@@ -96,47 +96,68 @@ public class View extends Observable implements Observer, VisitorInterface {
 		String[] iconPaths = new String[]{"res/cloud.png", "res/barret.png", "res/tifa.png", "res/aerith.png", "res/red.png", "res/yuffie.png", "res/cait.png", "res/vincent.png", "res/cid.png"};
 		JLabel[] characters = new JLabel[9];
 		
+		populateLeftPanel(names, iconPaths, characters, leftPanelConstraints);
+	}
+	
+	private void populateLeftPanel(String[] names, String[] iconPaths, JLabel[] characters, GridBagConstraints leftPanelConstraints) {
 		for(int i=0; i< characters.length; i++) {
 			characters[i] = createCharacterLabel(names[i], iconPaths[i]);
 			insertCharacterIntoPanel(this.leftPanel, characters[i], leftPanelConstraints);
-			characters[i].addMouseListener(new MouseListener() {
-
-				@Override
-				public void mouseClicked(MouseEvent arg0) {
-					JLabel oldCharacter = currentCharacter;
-					currentCharacter = ((JLabel)(arg0.getSource()));
-					
-					if(currentCharacter.getName() == oldCharacter.getName()) {
-						return;
-					}
-					
-					swapCurrentCharacterSelection(oldCharacter, currentCharacter);
-					Event selectedCharacter = new Event(Events.CHARACTER_CHANGED, currentCharacter.getName());
-					setChanged();
-					System.out.println("View: sending new character selection to Controller...");
-					notifyObservers(selectedCharacter);
-				}
-
-				private void swapCurrentCharacterSelection(JLabel oldCharacter, JLabel currentCharacter) {
-					oldCharacter.setBorder(null);
-					currentCharacter.setBorder(new LineBorder(Color.BLACK, 2));
-				}
-
-				@Override
-				public void mouseEntered(MouseEvent arg0) {}
-
-				@Override
-				public void mouseExited(MouseEvent arg0) {}
-
-				@Override
-				public void mousePressed(MouseEvent arg0) {}
-
-				@Override
-				public void mouseReleased(MouseEvent arg0) {}
-			});
+			addListener(characters, i);
 		}
 	}
-	
+
+	private void addListener(JLabel[] characters, int i) {
+		characters[i].addMouseListener(new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				JLabel oldCharacter = currentCharacter;
+				currentCharacter = ((JLabel)(arg0.getSource()));
+				
+				if(currentCharacter.getName() == oldCharacter.getName()) {
+					return;
+				}
+				
+				swapCurrentCharacterSelection(oldCharacter, currentCharacter);
+				Event selectedCharacter = new Event(Events.CHARACTER_CHANGED, currentCharacter.getName());
+				setChanged();
+				System.out.println("View: sending new character selection to Controller...");
+				notifyObservers(selectedCharacter);
+			}
+
+			private void swapCurrentCharacterSelection(JLabel oldCharacter, JLabel currentCharacter) {
+				oldCharacter.setBorder(null);
+				currentCharacter.setBorder(new LineBorder(Color.BLACK, 2));
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent arg0) {}
+
+			@Override
+			public void mouseExited(MouseEvent arg0) {}
+
+			@Override
+			public void mousePressed(MouseEvent arg0) {}
+
+			@Override
+			public void mouseReleased(MouseEvent arg0) {}
+		});
+	}
+
+	private void instantiateLeftPanel(int width, int height) {
+		this.leftPanel = new JPanel() {
+			private static final long serialVersionUID = 7127669893485044937L;
+
+			public Dimension getPreferredSize() {
+			      return new Dimension(width, height);
+			};
+			
+			public Dimension getMinimumSize() {
+			      return new Dimension(width, height);
+			};
+		};
+	}
+
 	private JLabel createCharacterLabel(String name, String iconPath) {
 		JLabel character = new JLabel(new ImageIcon(iconPath));
 		character.setName(name);
@@ -192,7 +213,10 @@ public class View extends Observable implements Observer, VisitorInterface {
 		}
 		case RESULT_FOR_VIEW:
 		{
-			//TODO
+			if(e.getParams()[0] instanceof List<?>){
+				List<?> results = (List<?>) (e.getParams()[0]);
+				manageResults(results);
+			}
 			break;
 		}
 		default:
@@ -200,6 +224,85 @@ public class View extends Observable implements Observer, VisitorInterface {
 			break;
 		}
 		}
+	}
+
+	private void manageResults(List<?> results) {
+		this.res = new ArrayList<String>();
+		
+		for(Object r : results) {
+			if(r instanceof String) {
+				this.res.add((String) r);
+			}
+		}
+		
+		createResultsDialog();
+	}
+
+	private void createResultsDialog() {
+		this.results = new JDialog();
+		this.results.setTitle("Results");
+		this.results.setPreferredSize(new Dimension(this.main.getSize().width/2, this.main.getSize().height));
+		
+		this.resultsPanel = new JPanel();
+		this.resultsScrollPane = new JScrollPane(this.resultsPanel);
+		
+		this.resultsPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.WEST;
+		
+		addLinesAndButton(gbc);
+		
+		this.results.add(this.resultsScrollPane);
+		
+		this.results.setModal (true);
+		this.results.setAlwaysOnTop (true);
+		this.results.setModalityType (ModalityType.APPLICATION_MODAL);
+		this.results.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.results.pack();
+		this.results.setVisible(true);
+	}
+
+	private void addLinesAndButton(GridBagConstraints gbc) {
+		for(int i=0; i < this.res.size(); i++) {
+			JLabel label = new JLabel(this.res.get(i));
+			
+			if(res.get(i).startsWith("#")) {
+				label.setForeground(Color.BLUE);
+			}
+			
+			this.resultsPanel.add(label, gbc);
+			gbc.gridy++;
+		}
+		
+		addClosingButton(gbc);
+	}
+
+	private void addClosingButton(GridBagConstraints gbc) {
+		JButton button = new JButton("Close");
+		button.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				results.dispose();
+			}
+			
+			@Override
+			public void mouseReleased(MouseEvent arg0) {}
+			
+			@Override
+			public void mousePressed(MouseEvent arg0) {}
+			
+			@Override
+			public void mouseExited(MouseEvent arg0) {}
+			
+			@Override
+			public void mouseEntered(MouseEvent arg0) {}	
+		});
+		
+		gbc.anchor = GridBagConstraints.SOUTH;
+		gbc.insets = new Insets(20, 20 , 20 , 20);
+		this.resultsPanel.add(button, gbc);
 	}
 
 	@Override
