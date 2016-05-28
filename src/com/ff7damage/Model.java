@@ -393,6 +393,7 @@ public class Model extends Observable implements Observer {
 		boolean mini = centerPanelData[12] == (byte) 0x01;
 		
 		this.limit = centerPanelData[13] != (byte) 0x00;
+		this.limitCode = centerPanelData[13];
 		
 		List<byte[]> additional = manageAdditionalParameters(centerPanelData);
 		

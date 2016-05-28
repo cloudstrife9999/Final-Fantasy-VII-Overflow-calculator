@@ -51,11 +51,11 @@ public class Utils {
 
 		{
 			put("Cloud Strife", new String[]{"Braver", "Cross-slash", "Blade Beam", "Climhazzard", "Meteorain", "Finishing Touch", "Omnislash"});
-			put("Barret Wallace", new String[]{"Big Shot", "Mindblow", "Grenade Bomb", "Hammer Blow", "Satellite Beam", "Ungarmax", "Catastrophe"});
-			put("Tifa Lockhart", new String[]{"Beat Rush", "Somersault", "Water Kick", "Meteodrive", "Dolphin Blow", "Meteor Strike", "Final Heaven"});
-			put("Aerith Gainsborough", new String[]{"Healing Wind", "Seal Evil", "Breath of the Earth", "Fury Brand", "Planet Protector", "Pulse of Life", "Great Gospel"});
-			put("Red XIII", new String[]{"Sled Fang", "Lunatic High", "Blood Fang", "Stardust Ray", "Howling Moon", "Earth Rave", "Cosmo Memory"});
-			put("Yuffie Kisaragi", new String[]{"Greased Lightning", "Clear Tranquil", "Landscaper", "Bloodfest", "Gauntlet", "Doom of the Living", "All Creation"});
+			put("Barret Wallace", new String[]{"Big Shot", "Mindblow", "Grenade Bomb", "Satellite Beam", "Ungarmax", "Catastrophe"});
+			put("Tifa Lockhart", new String[]{"Beat Rush", "Somersault", "Waterkick", "Meteodrive", "Dolphin Blow", "Meteor Strike", "Final Heaven"});
+			put("Aerith Gainsborough", new String[]{});
+			put("Red XIII", new String[]{"Sled Fang", "Blood Fang", "Stardust Ray", "Earth Rave", "Cosmo Memory"});
+			put("Yuffie Kisaragi", new String[]{"Greased Lightning", "Landscaper", "Bloodfest", "Gauntlet", "Doom of the Living", "All Creation"});
 			put("Cait Sith", new String[]{"Toy Box (rock)", "Toy Box (icicles)", "Toy Box (weight)", "Toy Box (hammer)", "Toy Box (fat chocobo)", "Toy Box (hell house)", "Toy Box (meteorites)", "Toy Soldier"});
 			put("Vincent Valentine", new String[]{"Berserk Dance", "Beast Flare", "Gigadunk", "Live Wire", "Splattercombo", "Nightmare", "Chaos Saber", "Satan Slam"});
 			put("Cid Highwind", new String[]{"Boost Jump", "Dynamite", "Hyper Jump", "Dragon", "Dragon Dive", "Big Brawl", "Highwind"});
@@ -302,18 +302,74 @@ public class Utils {
 	public static byte intToHex(int value) {
 		return Integer.valueOf(String.valueOf(value), 16).byteValue();
 	}
+
+	public static final Map<String, Integer> limitsPOWM = new HashMap<String, Integer>() {
+		private static final long serialVersionUID = 8315125795249714950L;
+
+		{
+			put("Braver", 3 * 16);
+			put("Cross-slash", 3 * 16 + (16 >> 2));
+			put("Blade Beam", 3 * 16 + (16 >> 1));
+			put("Climhazzard", 4 * 16 + 3 * (16 >> 3));
+			put("Meteorain", 16 + 5 * (16 >> 3));
+			put("Finishing Touch", 3 * 16 + (16 >> 3));
+			put("Omnislash", 3 * (16 >> 2));
+			put("Big Shot", 3 * 16 + (16 >> 2));
+			put("Grenade Bomb", 3 * 16 + 3 * (16 >> 3));
+			put("Satellite Beam", 2 * 16 + 3 * (16 >> 4));
+			put("Ungarmax", 16 >> 1);
+			put("Catastrophe", 16 + (16 >> 2));
+			put("Beat Rush", 16 + (16 >> 4));
+			put("Somersault", 16 + 3 * (16 >> 3));
+			put("Waterkick", 16 + (16 >> 2));
+			put("Meteodrive", 16 + 5 * (16 >> 3));
+			put("Dolphin Blow", 16 + 3 * (16 >> 2));
+			put("Meteor Strike", 16 + 7 * (16 >> 3));
+			put("Final Heaven", 2 * 16 + 5 * (16 >> 3));
+			put("Sled Fang", 3 * 16);
+			put("Blood Fang", 16 + (16 >> 4));
+			put("Stardust Ray", 5 * (16 >> 3) );
+			put("Earth Rave", 16 + 7 * (16 >> 3));
+			put("Cosmo Memory", 7 * 16 + 13 * (16 >> 4));
+			put("Greased Lightning", 3 * 16 + (16 >> 3));
+			put("Landscaper", 3 * 16);
+			put("Bloodfest", 5 * (16 >> 3) );
+			put("Gauntlet", 16 + 3 * (16 >> 2));
+			put("Doom of the Living", 5 * (16 >> 3));
+			put("All Creation", 8 * 16);
+			put("Toy Box (rock)", 2 * 16);
+			put("Toy Box (icicles)", 2 * 16 + (16 >> 1));
+			put("Toy Box (weight)", 3 * 16);
+			put("Toy Box (hammer)", 3 * 16 + (16 >> 1));
+			put("Toy Box (fat chocobo)", 4 * 16);
+			put("Toy Box (hell house)", 4 * 16 + (16 >> 1));
+			put("Toy Box (meteorites)", 5 * 16);
+			put("Toy Soldier", 5 * 16);
+			put("Berserk Dance", 16 + (16 >> 1));
+			put("Beast Flare", 3 * 16 + 3 * (16 >> 2));
+			put("Gigadunk", 2 * 16 + 5 * (16 >> 3));
+			put("Live Wire", 4 * 16 + 3 * (16 >> 3));
+			put("Splattercombo", 16 >> 1);
+			put("Chaos Saber", 2 * 16 + (16 >> 1));
+			put("Satan Slam", 5 * 16 + 5 * (16 >> 3));
+			put("Boost Jump", 3 * 16 + (16 >> 2));
+			put("Dynamite", 2 * 16 + (16 >> 2));
+			put("Hyper Jump", 3 * 16 + (16 >> 1));
+			put("Dragon", 16 + (16 >> 2));
+			put("Dragon Dive", 16 + 7 * (16 >> 4));
+			put("Big Brawl", 16 + (16 >> 3));
+			put("Highwind", 11 * (16 >> 4));
+		}
+	};
 	
-	public CharacterInterface constructCharacterFromCode(byte code, Object... params) {
-		return null; //TODO
+	public static String getLimitName(CharacterInterface attacker, byte limitCode) {
+		int index = Byte.valueOf(limitCode).intValue();
+		return limits.get(attacker.toString())[index - 1];
 	}
 
 	public static int getLimitPowerMultiplier(CharacterInterface attacker, byte limitCode) {
-		// TODO Auto-generated method stub
-		return 16;
-	}
-	
-	public static String getLimitName(CharacterInterface attacker, byte limitCode) {
-		// TODO Auto-generated method stub
-		return "a limit";
+		String limitName = getLimitName(attacker, limitCode);
+		
+		return limitsPOWM.get(limitName);
 	}
 }
