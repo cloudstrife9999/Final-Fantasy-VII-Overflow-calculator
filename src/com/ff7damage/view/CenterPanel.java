@@ -64,8 +64,13 @@ public class CenterPanel extends Observable {
 	private JPanel fifthLine;
 	private JScrollPane firstScrollPane;
 	private JScrollPane secondScrollPane;
+	private JScrollPane thirdScrollPane;
 	private JList<String> firstList;
 	private JList<String> secondList;
+	private JList<String> thirdList;
+	
+	private ByteBuffer data;
+	
 	
 	public CenterPanel(int width, int height) {
 		this.width = width;
@@ -117,26 +122,14 @@ public class CenterPanel extends Observable {
 		drawSecondLine();
 		drawThirdLine();
 		drawFourthLine();
+		drawFifthLine();
 		
-		this.centerPanel.add(this.firstLine, this.centerPanelGBC);
+		addButton();
 		
-		this.centerPanelGBC.gridy++;
-		this.centerPanel.add(this.secondLine, this.centerPanelGBC);
-		
-		this.centerPanelGBC.gridy++;
-		this.centerPanel.add(this.thirdLine, this.centerPanelGBC);
-		
-		this.centerPanelGBC.gridy++;
-		this.centerPanel.add(this.fourthLine, this.centerPanelGBC);
-		
-		if(!(this.selectedCharacter instanceof Yuffie)) {
-			drawFifthLine();
-			this.centerPanelGBC.gridy++;
-			this.centerPanel.add(this.fifthLine, this.centerPanelGBC);
-		}
-		
-		this.centerPanelGBC.gridy++;
-		
+		this.centerPanel.repaint();
+	}
+
+	private void addButton() {
 		JButton confirm = new JButton("Calculate the damage");
 		confirm.addMouseListener(new MouseListener() {
 			
@@ -162,9 +155,8 @@ public class CenterPanel extends Observable {
 			public void mouseEntered(MouseEvent e) {}
 		});
 		
+		this.centerPanelGBC.gridy++;
 		this.centerPanel.add(confirm, this.centerPanelGBC);
-		
-		this.centerPanel.repaint();
 	}
 
 	protected byte[] collectData() {
@@ -192,96 +184,119 @@ public class CenterPanel extends Observable {
 		 *  0x00 false, 0x01 true
 		 * mini: 1 byte
 		 *  0x00 false, 0x01 true
-		 * 1st additional parameter: 1 + 4? + x bytes
+		 * 1st additional parameter: 1 byte
+		 *  0x00 not a limit, 0x01-0x0... the limits
+		 * 2nd additional parameter: 1 + 4? + x bytes
 		 *  1st byte: 0x00 useless, 0x01 useful
 		 *  2nd to 5th bytes: len(x) in binary or nothing if useless
 		 *  6th to (5 + x)th bytes: the parameter or nothing if useless
-		 * 2nd additional parameter: 1 + 4? + x bytes
+		 * 3rd additional parameter: 1 + 4? + x bytes
 		 *  1st byte: 0x00 useless, 0x01 useful
 		 *  2nd to 5th bytes: len(x) in binary
 		 *  6th to (5 + x)th bytes: the parameter
-		 * 3rd additional parameter (weapon atk bonus if not final): 1 + 1? bytes
+		 * 4th additional parameter (weapon atk bonus if not final): 1 + 1? bytes
 		 * 	1st byte: 0x00 useless, 0x01 useful
 		 *  2nd byte: bonus atk value (0x00-0xFF) or nothing if useless
 		 */
-		
-		int firstAdditionalParameterLength = getFirstAdditionalParameterLength();
-		int firstAdditionalParameterTotalLength = 1 + (firstAdditionalParameterLength != 0 ? 4 + firstAdditionalParameterLength : 0);
 		
 		int secondAdditionalParameterLength = getSecondAdditionalParameterLength();
 		int secondAdditionalParameterTotalLength = 1 + (secondAdditionalParameterLength != 0 ? 4 + secondAdditionalParameterLength : 0);
 		
 		int thirdAdditionalParameterLength = getThirdAdditionalParameterLength();
-		int thirdAdditionalParameterTotalLength = 1 + thirdAdditionalParameterLength;
+		int thirdAdditionalParameterTotalLength = 1 + (thirdAdditionalParameterLength != 0 ? 4 + thirdAdditionalParameterLength : 0);
 		
-		int totalLength = 13 + firstAdditionalParameterTotalLength + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength;
+		int fourthAdditionalParameterLength = getfourthAdditionalParameterLength();
+		int fourthAdditionalParameterTotalLength = 1 + fourthAdditionalParameterLength;
 		
-		ByteBuffer data = ByteBuffer.allocate(totalLength);
-		data.put(Utils.characterWrapperToCode(this.selectedCharacter));
-		data.put(Utils.stringToHexToByte(this.level.getSelectedValue()));
-		data.put(Utils.stringToHexToByte(this.strength.getSelectedValue()));
-		data.put(Utils.getWeaponCode(this.weapon.getSelectedValue()));
-		data.put(Utils.stringToHexToByte(this.power.getSelectedValue()));
-		data.put(Utils.elementToCode(this.element.getSelectedValue()));
-		data.put(Utils.stringToHexToByte(this.heroDrink.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.critical.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.berserk.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.row.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.split.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.frog.getSelectedValue()));
-		data.put(Utils.stringToByteCode(this.mini.getSelectedValue()));
+		int totalLength = 14 + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength + fourthAdditionalParameterTotalLength;
 		
-		byte first = (byte) (firstAdditionalParameterLength == 0 ? 0x00 : 0x01);
-		byte[] firstLength = ByteBuffer.allocate(4).putInt(firstAdditionalParameterLength).array();
+		this.data = ByteBuffer.allocate(totalLength);
 		
-		byte second = (byte) (secondAdditionalParameterLength == 0 ? 0x00 : 0x01);
-		byte[] secondLength = ByteBuffer.allocate(4).putInt(secondAdditionalParameterLength).array();
+		addBasicData();
+		addAdditionalData(secondAdditionalParameterLength, thirdAdditionalParameterLength, fourthAdditionalParameterLength);
 		
+		return this.data.array();
+	}
+
+	private void addAdditionalData(int secondAdditionalParameterLength, int thirdAdditionalParameterLength, int fourthAdditionalParameterLength) {
+		byte first = (byte) this.firstList.getSelectedIndex();
+		this.data.put(first);
+		
+		putSecondAdditionalParameter(secondAdditionalParameterLength);
+		putThirdAdditionalParameter(thirdAdditionalParameterLength);
+		putFourthAdditionalParameter(fourthAdditionalParameterLength);
+	}
+
+	private void putFourthAdditionalParameter(int fourthAdditionalParameterLength) {
+		byte fourth = (byte) (fourthAdditionalParameterLength == 0 ? 0x00 : 0x01);
+		byte[] fourthLength = ByteBuffer.allocate(4).putInt(fourthAdditionalParameterLength).array();
+		
+		this.data.put(fourth);
+		
+		if(fourthAdditionalParameterLength != 0) {
+			this.data.put(fourthLength);
+			byte thirdParameter = 0x00;
+			this.data.put(thirdParameter);
+		}
+	}
+
+	private void putThirdAdditionalParameter(int thirdAdditionalParameterLength) {
 		byte third = (byte) (thirdAdditionalParameterLength == 0 ? 0x00 : 0x01);
 		byte[] thirdLength = ByteBuffer.allocate(4).putInt(thirdAdditionalParameterLength).array();
 		
-		data.put(first);
-		
-		if(firstAdditionalParameterLength != 0) {
-			data.put(firstLength);
-			
-			byte[] firstParameter;
-			
-			if(!(this.selectedCharacter instanceof Barret)) {
-				firstParameter = Utils.stringToIntToByteArray(this.firstList.getSelectedValue());
-			}
-			else {
-				String index = Integer.valueOf(this.firstList.getSelectedIndex()).toString(); //it is correct
-				firstParameter = Utils.stringToIntToByteArray(index);
-			}
-			
-			data.put(firstParameter);
-		}
-		
-		data.put(second);
-		
-		if(secondAdditionalParameterLength != 0) {
-			data.put(secondLength);
-			byte[] secondParameter = Utils.stringToIntToByteArray(this.secondList.getSelectedValue());
-			data.put(secondParameter);
-		}
-		
-		data.put(third);
+		this.data.put(third);
 		
 		if(thirdAdditionalParameterLength != 0) {
-			data.put(thirdLength);
-			byte thirdParameter = 0x00;
-			data.put(thirdParameter);
+			this.data.put(thirdLength);
+			byte[] thirdParameter = Utils.stringToIntToByteArray(this.thirdList.getSelectedValue());
+			this.data.put(thirdParameter);
 		}
-		
-		return data.array();
 	}
 
-	private int getThirdAdditionalParameterLength() {
+	private void putSecondAdditionalParameter(int secondAdditionalParameterLength) {
+		byte second = (byte) (secondAdditionalParameterLength == 0 ? 0x00 : 0x01);
+		byte[] secondLength = ByteBuffer.allocate(4).putInt(secondAdditionalParameterLength).array();
+		
+		this.data.put(second);
+		
+		if(secondAdditionalParameterLength != 0) {
+			this.data.put(secondLength);
+			
+			byte[] secondParameter;
+			
+			if(!(this.selectedCharacter instanceof Barret)) {
+				secondParameter = Utils.stringToIntToByteArray(this.secondList.getSelectedValue());
+			}
+			else {
+				String index = Integer.valueOf(this.secondList.getSelectedIndex()).toString(); //it is correct
+				secondParameter = Utils.stringToIntToByteArray(index);
+			}
+			
+			this.data.put(secondParameter);
+		}
+	}
+
+	private void addBasicData() {
+		this.data.put(Utils.characterWrapperToCode(this.selectedCharacter));
+		this.data.put(Utils.stringToHexToByte(this.level.getSelectedValue()));
+		this.data.put(Utils.stringToHexToByte(this.strength.getSelectedValue()));
+		this.data.put(Utils.getWeaponCode(this.weapon.getSelectedValue()));
+		this.data.put(Utils.stringToHexToByte(this.power.getSelectedValue()));
+		this.data.put(Utils.elementToCode(this.element.getSelectedValue()));
+		this.data.put(Utils.stringToHexToByte(this.heroDrink.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.critical.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.berserk.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.row.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.split.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.frog.getSelectedValue()));
+		this.data.put(Utils.stringToByteCode(this.mini.getSelectedValue()));
+	}
+
+	private int getfourthAdditionalParameterLength() {
 		return 0; //TODO implement non-ultimate weapons.
 	}
 
-	private int getSecondAdditionalParameterLength() {
+	private int getThirdAdditionalParameterLength() {
 		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof CaitSith ||
 				this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof Cid ||
 				this.selectedCharacter instanceof Tifa) {
@@ -293,7 +308,7 @@ public class CenterPanel extends Observable {
 			}
 	}
 
-	private int getFirstAdditionalParameterLength() {
+	private int getSecondAdditionalParameterLength() {
 		if(this.selectedCharacter instanceof Yuffie) {
 			return 0;
 		}
@@ -311,6 +326,7 @@ public class CenterPanel extends Observable {
 		drawStrengthList();
 		
 		this.firstLine.repaint();
+		this.centerPanel.add(this.firstLine, this.centerPanelGBC);
 	}
 	
 	private void drawSecondLine() {
@@ -322,6 +338,8 @@ public class CenterPanel extends Observable {
 		drawHeroDrinksList();
 		
 		this.secondLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.secondLine, this.centerPanelGBC);
 	}
 	
 	private void drawThirdLine() {
@@ -333,6 +351,8 @@ public class CenterPanel extends Observable {
 		drawRowList();
 		
 		this.thirdLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.thirdLine, this.centerPanelGBC);
 	}
 
 	private void drawFourthLine() {
@@ -344,6 +364,8 @@ public class CenterPanel extends Observable {
 		drawMiniList();
 		
 		this.fourthLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.fourthLine, this.centerPanelGBC);
 	}
 	
 	private void drawFifthLine() {
@@ -351,40 +373,49 @@ public class CenterPanel extends Observable {
 		this.fifthLine.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
 		
 		drawFirstList();
+		drawOptionalLists();
+		
+		this.fifthLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.fifthLine, this.centerPanelGBC);
+	}
+
+	private void drawOptionalLists() {
+		if(!(this.selectedCharacter instanceof Yuffie)) {
+			drawSecondList();
+		}
 		
 		if(this.selectedCharacter instanceof Cloud || this.selectedCharacter instanceof Cid ||
 				this.selectedCharacter instanceof RedXIII || this.selectedCharacter instanceof CaitSith ||
 				this.selectedCharacter instanceof Tifa) {
 			
-			drawSecondList();
+			drawThirdList();
 		}
-		
-		this.fifthLine.repaint();
 	}
 
-	private void drawSecondList() {
-		int[] bounds = getSecondListBounds();
+	private void drawThirdList() {
+		int[] bounds = getThirdListBounds();
 		String[] data = new String[bounds[1] - bounds[0] + 1];
 		
 		for(int i=bounds[0]; i <= bounds[1]; i++) {
 			data[i - bounds[0]] = Integer.valueOf(i).toString();
 		}
 		
-		String headerMessage = getSecondListHeaderMessage();
+		String headerMessage = getThirdListHeaderMessage();
 		
-		this.secondList = new JList<String>(data);
-		this.secondList.setSelectedIndex(data.length - 1);
-		this.secondScrollPane = new JScrollPane(this.secondList);
-		this.secondScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
+		this.thirdList = new JList<String>(data);
+		this.thirdList.setSelectedIndex(data.length - 1);
+		this.thirdScrollPane = new JScrollPane(this.thirdList);
+		this.thirdScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
 		JLabel header = Utils.drawHeader(headerMessage);
 		
-		this.secondScrollPane.setColumnHeaderView(header);
-		this.fifthLine.add(this.secondScrollPane);
+		this.thirdScrollPane.setColumnHeaderView(header);
+		this.fifthLine.add(this.thirdScrollPane);
 	}
 
-	private void drawFirstList() {
-		int[] bounds = getFirstListBounds();
+	private void drawSecondList() {
+		int[] bounds = getSecondListBounds();
 		String[] data; 
 		
 		if(this.selectedCharacter instanceof Barret) {
@@ -404,20 +435,37 @@ public class CenterPanel extends Observable {
 			}
 		}
 		
-		String headerMessage = getFirstListHeaderMessage();
+		String headerMessage = getSecondListHeaderMessage();
+		
+		this.secondList = new JList<String>(data);
+		this.secondList.setSelectedIndex(data.length - 1);
+		this.secondScrollPane = new JScrollPane(this.secondList);
+		this.secondScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
+		
+		JLabel header = Utils.drawHeader(headerMessage);
+		
+		this.secondScrollPane.setColumnHeaderView(header);
+		this.fifthLine.add(this.secondScrollPane);
+	}
+	
+	private void drawFirstList() {
+		String[] partialData = Utils.limits.get(this.currentCharacter.getText().substring(10));
+		String[] data = new String[partialData.length + 1];
+		data[0] = "The attack is not a limit";
+		System.arraycopy(partialData, 0, data, 1, partialData.length);
 		
 		this.firstList = new JList<String>(data);
-		this.firstList.setSelectedIndex(data.length - 1);
+		this.firstList.setSelectedIndex(0);
 		this.firstScrollPane = new JScrollPane(this.firstList);
 		this.firstScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
-		JLabel header = Utils.drawHeader(headerMessage);
+		JLabel header = Utils.drawHeader("If the attack is a limit, select it");
 		
 		this.firstScrollPane.setColumnHeaderView(header);
 		this.fifthLine.add(this.firstScrollPane);
 	}
 
-	private String getSecondListHeaderMessage() {
+	private String getThirdListHeaderMessage() {
 		if(this.selectedCharacter instanceof Cloud) {
 			return "Select Cloud Strife's max HP";
 		}
@@ -438,7 +486,7 @@ public class CenterPanel extends Observable {
 		}
 	}
 
-	private int[] getSecondListBounds() {
+	private int[] getThirdListBounds() {
 		if(this.selectedCharacter instanceof Cloud) {
 			return new int[]{1, 9999};
 		}
@@ -459,7 +507,7 @@ public class CenterPanel extends Observable {
 		}
 	}
 	
-	private String getFirstListHeaderMessage() {
+	private String getSecondListHeaderMessage() {
 		if(this.selectedCharacter instanceof Cloud) {
 			return "Select Cloud Strife's current HP";
 		}
@@ -489,7 +537,7 @@ public class CenterPanel extends Observable {
 		}
 	}
 
-	private int[] getFirstListBounds() {
+	private int[] getSecondListBounds() {
 		if(this.selectedCharacter instanceof Cloud) {
 			return new int[]{1, 9999};
 		}

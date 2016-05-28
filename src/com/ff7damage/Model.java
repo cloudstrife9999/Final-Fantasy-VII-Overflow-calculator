@@ -3,6 +3,7 @@ package com.ff7damage;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,8 @@ public class Model extends Observable implements Observer {
 	private boolean splitAttack;
 	private Elements attackElement;
 	private int techniquePower;
+	private boolean limit;
+	private byte limitCode;
 	private Random random;
 	private Overflow overflow;
 	
@@ -115,6 +118,10 @@ public class Model extends Observable implements Observer {
 	}
 	
 	private int powerMultiplier() {
+		if(this.limit) {
+			return Utils.getLimitPowerMultiplier(this.attacker, this.limitCode);
+		}
+		
 		if(this.attacker.getKills() != Utils.USELESS) { //Vincent with Death Penalty
 			return this.attacker.getPowerModifier(this.techniquePower, new int[]{this.attacker.getKills()});
 		}
@@ -298,7 +305,7 @@ public class Model extends Observable implements Observer {
 	private void printBaseMultipliers(int attackMultiplier, int defenseMultiplier, int powerMultiplier) {
 		System.out.println("Attack multiplier = " + attackMultiplier);
 		System.out.println("Defense multiplier = " + defenseMultiplier);
-		System.out.println("Power multiplier = " + powerMultiplier);
+		System.out.println("Power multiplier = " + powerMultiplier + (this.limit ? ", which is weapon-independent because " + Utils.getLimitName(this.attacker, this.limitCode) + " is being used." : ""));
 	}
 	
 	private void printFinalDamage(int[] finalDamage) {
@@ -378,34 +385,17 @@ public class Model extends Observable implements Observer {
 		boolean frog = centerPanelData[11] == (byte) 0x01;
 		boolean mini = centerPanelData[12] == (byte) 0x01;
 		
-		int overhead = 0;
-		byte[] first = null;
-		byte[] second = null;
-		byte[] third = null;
+		this.limit = centerPanelData[13] != (byte) 0x00;
 		
-		if(centerPanelData[13] == (byte) 0x01) {
-			int firstLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
-			overhead += 5;
-			first = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + firstLength);
-			overhead += firstLength;
-		}
+		List<byte[]> additional = manageAdditionalParameters(centerPanelData);
 		
-		if(centerPanelData[13 + overhead] == (byte) 0x01) {
-			int secondLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
-			overhead += 5;
-			second = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + secondLength);
-			overhead += secondLength;
-		}
-		
-		if(centerPanelData[13 + overhead] == (byte) 0x01) {
-			int thirdLength = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 14 + overhead, 18 + overhead)).getInt(0);
-			overhead += 5;
-			third = Arrays.copyOfRange(centerPanelData, 13 + overhead, 13 + overhead + thirdLength);
-		}
-		
-		WeaponInterface weapon = WeaponsFactory.createWeapon(ultimateWeapon, characterCode, first, third);
-		this.attacker = CharacterFactory.createCharacter(characterCode, level, weapon, strength, first, second, berserk, frog, mini, attackerRow);
+		WeaponInterface weapon = WeaponsFactory.createWeapon(ultimateWeapon, characterCode, additional.get(0), additional.get(2));
+		this.attacker = CharacterFactory.createCharacter(characterCode, level, weapon, strength, additional.get(0), additional.get(1), berserk, frog, mini, attackerRow);
 	
+		manageTarget(rightPanelData);
+	}
+
+	private void manageTarget(byte[] rightPanelData) {
 		int targetAverageLevel = Byte.valueOf(rightPanelData[0]).intValue();
 		int targetDefense = ByteBuffer.allocate(4).put(Arrays.copyOfRange(rightPanelData, 1, 5)).getInt(0);
 		boolean targetDefend = rightPanelData[5] == (byte) 0x01;
@@ -428,5 +418,30 @@ public class Model extends Observable implements Observer {
 		absorbsMap.put(this.attackElement, absorbs);
 		
 		this.target = new Target(targetAverageLevel, targetDefense, targetRow, targetDefend, targetSadness, targetBarrier, targetBack, targetBackMultiplier, affinities, absorbsMap);
+	}
+
+	private List<byte[]> manageAdditionalParameters(byte[] centerPanelData) {
+		int overhead = 0;
+		
+		List<byte[]> toReturn = new ArrayList<byte[]>();
+		overhead = fetchParameter(centerPanelData, overhead, toReturn);
+		overhead = fetchParameter(centerPanelData, overhead, toReturn);
+		fetchParameter(centerPanelData, overhead, toReturn);
+		
+		return toReturn;
+	}
+
+	private int fetchParameter(byte[] centerPanelData, int overhead, List<byte[]> toReturn) {
+		if(centerPanelData[14 + overhead] == (byte) 0x01) {
+			int length = ByteBuffer.allocate(4).put(Arrays.copyOfRange(centerPanelData, 15 + overhead, 19 + overhead)).getInt(0);
+			overhead += 5;
+			toReturn.add(Arrays.copyOfRange(centerPanelData, 14 + overhead, 14 + overhead + length));
+			overhead += length;
+		}
+		else {
+			toReturn.add(null);
+		}
+		
+		return overhead;
 	}
 }

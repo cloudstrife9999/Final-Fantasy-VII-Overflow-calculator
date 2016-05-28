@@ -46,6 +46,22 @@ public class Utils {
 		}
 	};
 	
+	public static final Map<String, String[]> limits = new HashMap<String, String[]>() {
+		private static final long serialVersionUID = -4747479534463530374L;
+
+		{
+			put("Cloud Strife", new String[]{"Braver", "Cross-slash", "Blade Beam", "Climhazzard", "Meteorain", "Finishing Touch", "Omnislash"});
+			put("Barret Wallace", new String[]{"Big Shot", "Mindblow", "Grenade Bomb", "Hammer Blow", "Satellite Beam", "Ungarmax", "Catastrophe"});
+			put("Tifa Lockhart", new String[]{"Beat Rush", "Somersault", "Water Kick", "Meteodrive", "Dolphin Blow", "Meteor Strike", "Final Heaven"});
+			put("Aerith Gainsborough", new String[]{"Healing Wind", "Seal Evil", "Breath of the Earth", "Fury Brand", "Planet Protector", "Pulse of Life", "Great Gospel"});
+			put("Red XIII", new String[]{"Sled Fang", "Lunatic High", "Blood Fang", "Stardust Ray", "Howling Moon", "Earth Rave", "Cosmo Memory"});
+			put("Yuffie Kisaragi", new String[]{"Greased Lightning", "Clear Tranquil", "Landscaper", "Bloodfest", "Gauntlet", "Doom of the Living", "All Creation"});
+			put("Cait Sith", new String[]{"Toy Box (rock)", "Toy Box (icicles)", "Toy Box (weight)", "Toy Box (hammer)", "Toy Box (fat chocobo)", "Toy Box (hell house)", "Toy Box (meteorites)", "Toy Soldier"});
+			put("Vincent Valentine", new String[]{"Berserk Dance", "Beast Flare", "Gigadunk", "Live Wire", "Splattercombo", "Nightmare", "Chaos Saber", "Satan Slam"});
+			put("Cid Highwind", new String[]{"Boost Jump", "Dynamite", "Hyper Jump", "Dragon", "Dragon Dive", "Big Brawl", "Highwind"});
+		}
+	};
+	
 	public static int sanitize(int value, int min, int max, int def) {
 		if(value < min || value > max) {
 			return def;
@@ -289,5 +305,15 @@ public class Utils {
 	
 	public CharacterInterface constructCharacterFromCode(byte code, Object... params) {
 		return null; //TODO
+	}
+
+	public static int getLimitPowerMultiplier(CharacterInterface attacker, byte limitCode) {
+		// TODO Auto-generated method stub
+		return 16;
+	}
+	
+	public static String getLimitName(CharacterInterface attacker, byte limitCode) {
+		// TODO Auto-generated method stub
+		return "a limit";
 	}
 }
