@@ -51,7 +51,7 @@ public class Utils {
 
 		{
 			put("Cloud Strife", new String[]{"Braver", "Cross-slash", "Blade Beam", "Climhazzard", "Meteorain", "Finishing Touch", "Omnislash"});
-			put("Barret Wallace", new String[]{"Big Shot", "Mindblow", "Grenade Bomb", "Satellite Beam", "Ungarmax", "Catastrophe"});
+			put("Barret Wallace", new String[]{"Big Shot", "Grenade Bomb", "Satellite Beam", "Ungarmax", "Catastrophe"});
 			put("Tifa Lockhart", new String[]{"Beat Rush", "Somersault", "Waterkick", "Meteodrive", "Dolphin Blow", "Meteor Strike", "Final Heaven"});
 			put("Aerith Gainsborough", new String[]{});
 			put("Red XIII", new String[]{"Sled Fang", "Blood Fang", "Stardust Ray", "Earth Rave", "Cosmo Memory"});
