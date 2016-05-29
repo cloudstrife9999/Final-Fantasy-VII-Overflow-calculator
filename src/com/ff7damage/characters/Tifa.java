@@ -95,7 +95,7 @@ public class Tifa extends Character implements CharacterInterface {
 	
 	@Override
 	public String toString() {
-		return "Tifa LockHart";
+		return "Tifa Lockhart";
 	}
 	
 	@Override
