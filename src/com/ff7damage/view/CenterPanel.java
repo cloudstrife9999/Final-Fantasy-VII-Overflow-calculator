@@ -186,7 +186,7 @@ public class CenterPanel extends Observable {
 		
 		String[] message = new String[]{
 				"Final Fantasy VII damage and overflow calculator",
-				"Version 1.0, 28 May 2016",
+				"Version 1.1, 29 May 2016",
 				"by Cloudstrife9999 a.k.a. Emanuele Uliana",
 				"Computer engineer (bachelor and master) at Politecnico di Milano",
 				"Computer Science PhD student at Royal Holloway University of London"
