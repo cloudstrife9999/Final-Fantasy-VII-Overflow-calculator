@@ -25,6 +25,7 @@ public class Model extends Observable implements Observer {
 	private boolean splitAttack;
 	private Elements attackElement;
 	private int techniquePower;
+	private boolean longRangeMateria;
 	private boolean limit;
 	private byte limitCode;
 	private Random random;
@@ -45,7 +46,7 @@ public class Model extends Observable implements Observer {
 	}
 	
 	private double rowMultiplier() {
-		if(this.attacker.getWeapon().isLongRange()) {
+		if(this.longRangeMateria || this.attacker.getWeapon().isLongRange()) {
 			return 1;
 		}
 		
@@ -119,7 +120,7 @@ public class Model extends Observable implements Observer {
 	
 	private int powerMultiplier() {
 		if(this.limit) {
-			return Utils.getLimitPowerMultiplier(this.attacker, this.limitCode);
+			return Utils.getLimitPowerMultiplier(this.attacker.toString(), this.limitCode);
 		}
 		
 		if(this.attacker.getKills() != Utils.USELESS) { //Vincent with Death Penalty
@@ -175,7 +176,10 @@ public class Model extends Observable implements Observer {
 		this.resultsForController.add("##### Begin modifiers #####");
 		this.resultsForController.add("The attack is " + (this.criticalHit ? "" : "not ") + "a critical hit: critical multiplier = " + criticalMultiplier());
 		this.resultsForController.add("The attacker is " + (this.attacker.isBerserked() ? "" : "not ") + "in berserk: berserk status multiplier = " + formatNumber(berserkMultiplier()));
-		this.resultsForController.add("The attacker is in " + (this.attacker.getRow().equals(Row.BACK) ? "back" : "front") + " row and the target is in " + (this.target.getRow().equals(Row.BACK) ? "back" : "front") + " row: row multiplier = " + formatNumber(rowMultiplier()));
+		this.resultsForController.add("Long range materia check: " + this.attacker.toString() + (this.longRangeMateria ? " has" : " doesn't have") + " the Long Range Materia equipped.");
+		this.resultsForController.add("Long range weapon check: " + this.attacker.getWeapon().toString() + " is " + (this.attacker.getWeapon().isLongRange() ? "" : "not ") + "a long range weapon.");
+		this.resultsForController.add("Row checks: " + this.attacker.toString() + " is in " + (this.attacker.getRow().equals(Row.BACK) ? "back" : "front") + " row and the target is in " + (this.target.getRow().equals(Row.BACK) ? "back" : "front") + " row.");
+		this.resultsForController.add("For these reasons, row multiplier = " + formatNumber(rowMultiplier()));
 		this.resultsForController.add("The target is " + (this.target.isInDefenseMode() ? "" : "not ") + "in defense position: defense position multiplier = " + formatNumber(defenseStatusMultiplier()));
 		this.resultsForController.add("The target is " + (this.target.isBackAttacked() ? "" : "not ") + "being attacked on his back: back attack multiplier = " + backMultiplier());
 		this.resultsForController.add("The attacker is " + (this.attacker.isInFrog() ? "" : "not ") + "in frog status: frog status multiplier = " + formatNumber(frogMultiplier()));
@@ -309,7 +313,7 @@ public class Model extends Observable implements Observer {
 	private void printBaseMultipliers(int attackMultiplier, int defenseMultiplier, int powerMultiplier) {
 		this.resultsForController.add("Attack multiplier = " + attackMultiplier);
 		this.resultsForController.add("Defense multiplier = " + defenseMultiplier);
-		this.resultsForController.add("Power multiplier = " + powerMultiplier + (this.limit ? ", which is weapon-independent because " + Utils.getLimitName(this.attacker, this.limitCode) + " is being used." : ""));
+		this.resultsForController.add("Power multiplier = " + powerMultiplier + (this.limit ? ", which is weapon-independent because " + Utils.getLimitName(this.attacker.toString(), this.limitCode) + " is being used." : ""));
 	}
 	
 	private void printFinalDamage(int[] finalDamage) {
@@ -381,9 +385,9 @@ public class Model extends Observable implements Observer {
 		byte characterCode = centerPanelData[0];
 		int level = Byte.valueOf(centerPanelData[1]).intValue();
 		int strength = Byte.valueOf(centerPanelData[2]).intValue();
-		boolean ultimateWeapon = centerPanelData[3] == (byte) 0x00;
+		byte weaponCode = centerPanelData[3];
 		this.techniquePower = Byte.valueOf(centerPanelData[4]).intValue();
-		this.attackElement = Utils.elements.get(centerPanelData[5]);
+		this.attackElement = Utils.getElementFromCode(centerPanelData[5]);
 		this.heroDrinksNumber = Byte.valueOf(centerPanelData[6]).intValue();
 		this.criticalHit = centerPanelData[7] == (byte) 0x01;
 		boolean berserk = centerPanelData[8] == (byte) 0x01;
@@ -397,7 +401,10 @@ public class Model extends Observable implements Observer {
 		
 		List<byte[]> additional = manageAdditionalParameters(centerPanelData);
 		
-		WeaponInterface weapon = WeaponsFactory.createWeapon(ultimateWeapon, characterCode, additional.get(0), additional.get(2));
+		this.longRangeMateria = additional.get(2)[0] == (byte) 0x01; 
+		
+		double[] postVarianceMultipliers = WeaponsFactory.getPostVarianceMultipliers(weaponCode, characterCode);
+		WeaponInterface weapon = WeaponsFactory.createWeapon(weaponCode, characterCode, additional.get(0), postVarianceMultipliers);
 		this.attacker = CharacterFactory.createCharacter(characterCode, level, weapon, strength, additional.get(0), additional.get(1), berserk, frog, mini, attackerRow);
 	
 		manageTarget(rightPanelData);
@@ -434,7 +441,9 @@ public class Model extends Observable implements Observer {
 		List<byte[]> toReturn = new ArrayList<byte[]>();
 		overhead = fetchParameter(centerPanelData, overhead, toReturn);
 		overhead = fetchParameter(centerPanelData, overhead, toReturn);
-		fetchParameter(centerPanelData, overhead, toReturn);
+		
+		toReturn.add(new byte[]{centerPanelData[14 + overhead]});
+		System.out.println(centerPanelData[14 + overhead]);
 		
 		return toReturn;
 	}

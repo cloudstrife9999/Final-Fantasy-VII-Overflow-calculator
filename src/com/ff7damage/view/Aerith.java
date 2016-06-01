@@ -9,6 +9,7 @@ public class Aerith extends Wrapper {
 	
 	@Override
 	public String[] getWeapons() {
-		return new String[]{"Princess Guard"};
+		return new String[]{"Princess Guard", "Guard Stick", "Mythril Rod", "Full Metal Staff", "Striking Staff", "Prism Staff", "Aurora Rod",
+				"Wizard Staff", "Wizer Staff", "Fairy Tale", "Umbrella"};
 	}
 }

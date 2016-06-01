@@ -9,6 +9,7 @@ public class Vincent extends Wrapper {
 	
 	@Override
 	public String[] getWeapons() {
-		return new String[]{"Death Penalty"};
+		return new String[]{"Death Penalty", "Quicksilver", "Shotgun", "Shortbarrel", "Lariat", "Winchester", "Peacemaker", "Buntline",
+				"Long Barrel R", "Silver Rifle", "Sniper CR", "Supershot ST", "Outsider"};
 	}
 }

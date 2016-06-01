@@ -20,6 +20,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import com.ff7damage.Elements;
 import com.ff7damage.Event;
 import com.ff7damage.Events;
 import com.ff7damage.Utils;
@@ -46,7 +47,7 @@ public class CenterPanel extends Observable {
 	private JScrollPane elementScrollPane;
 	private JScrollPane heroDrinkScrollPane;
 	private JList<String> power;
-	private JList<String> element;
+	private JList<Elements> element;
 	private JList<String> heroDrink;
 	
 	private JPanel thirdLine;
@@ -265,7 +266,7 @@ public class CenterPanel extends Observable {
 		 * level: 1 byte (0x01-0x63)
 		 * strength: 1 byte (0x00-0xFF)
 		 * weapon: 1 byte
-		 *  0x00 final weapon, 0x01 other weapon
+		 *  0x00 final weapon, 0xXY other weapons
 		 * technique power: 1 byte (0x01-0xFF)
 		 * attack element: 1 byte
 		 *  0x00 fire, 0x01 ice, 0x02 lightning, 0x03 earth, 0x04 wind, 0x05 water, 0x06 poison, 0x07 holy, 0x08 gravity,
@@ -304,39 +305,28 @@ public class CenterPanel extends Observable {
 		int thirdAdditionalParameterLength = getThirdAdditionalParameterLength();
 		int thirdAdditionalParameterTotalLength = 1 + (thirdAdditionalParameterLength != 0 ? 4 + thirdAdditionalParameterLength : 0);
 		
-		int fourthAdditionalParameterLength = getfourthAdditionalParameterLength();
-		int fourthAdditionalParameterTotalLength = 1 + fourthAdditionalParameterLength;
-		
-		int totalLength = 14 + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength + fourthAdditionalParameterTotalLength;
+		int totalLength = 15 + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength;
 		
 		this.data = ByteBuffer.allocate(totalLength);
 		
 		addBasicData();
-		addAdditionalData(secondAdditionalParameterLength, thirdAdditionalParameterLength, fourthAdditionalParameterLength);
+		addAdditionalData(secondAdditionalParameterLength, thirdAdditionalParameterLength);
 		
 		return this.data.array();
 	}
 
-	private void addAdditionalData(int secondAdditionalParameterLength, int thirdAdditionalParameterLength, int fourthAdditionalParameterLength) {
+	private void addAdditionalData(int secondAdditionalParameterLength, int thirdAdditionalParameterLength) {
 		byte first = (byte) this.firstList.getSelectedIndex();
 		this.data.put(first);
 		
 		putSecondAdditionalParameter(secondAdditionalParameterLength);
 		putThirdAdditionalParameter(thirdAdditionalParameterLength);
-		putFourthAdditionalParameter(fourthAdditionalParameterLength);
+		putFourthAdditionalParameter();
 	}
 
-	private void putFourthAdditionalParameter(int fourthAdditionalParameterLength) {
-		byte fourth = (byte) (fourthAdditionalParameterLength == 0 ? 0x00 : 0x01);
-		byte[] fourthLength = ByteBuffer.allocate(4).putInt(fourthAdditionalParameterLength).array();
-		
+	private void putFourthAdditionalParameter() {
+		byte fourth = (byte) 0x01; //TODO implement long range
 		this.data.put(fourth);
-		
-		if(fourthAdditionalParameterLength != 0) {
-			this.data.put(fourthLength);
-			byte thirdParameter = 0x00;
-			this.data.put(thirdParameter);
-		}
 	}
 
 	private void putThirdAdditionalParameter(int thirdAdditionalParameterLength) {
@@ -379,9 +369,9 @@ public class CenterPanel extends Observable {
 		this.data.put(Utils.characterWrapperToCode(this.selectedCharacter));
 		this.data.put(Utils.stringToHexToByte(this.level.getSelectedValue()));
 		this.data.put(Utils.stringToHexToByte(this.strength.getSelectedValue()));
-		this.data.put(Utils.getWeaponCode(this.weapon.getSelectedValue()));
+		this.data.put((byte) this.weapon.getSelectedIndex());
 		this.data.put(Utils.stringToHexToByte(this.power.getSelectedValue()));
-		this.data.put(Utils.elementToCode(this.element.getSelectedValue()));
+		this.data.put(Utils.getCodeFromElement(this.element.getSelectedValue()));
 		this.data.put(Utils.stringToHexToByte(this.heroDrink.getSelectedValue()));
 		this.data.put(Utils.stringToByteCode(this.critical.getSelectedValue()));
 		this.data.put(Utils.stringToByteCode(this.berserk.getSelectedValue()));
@@ -389,10 +379,6 @@ public class CenterPanel extends Observable {
 		this.data.put(Utils.stringToByteCode(this.split.getSelectedValue()));
 		this.data.put(Utils.stringToByteCode(this.frog.getSelectedValue()));
 		this.data.put(Utils.stringToByteCode(this.mini.getSelectedValue()));
-	}
-
-	private int getfourthAdditionalParameterLength() {
-		return 0; //TODO implement non-ultimate weapons.
 	}
 
 	private int getThirdAdditionalParameterLength() {
@@ -548,7 +534,7 @@ public class CenterPanel extends Observable {
 	}
 	
 	private void drawFirstList() {
-		String[] partialData = Utils.limits.get(this.currentCharacter.getText().substring(10));
+		String[] partialData = Utils.getCharacterLimits(this.currentCharacter.getText().substring(10));
 		String[] data = new String[partialData.length + 1];
 		data[0] = "The attack is not a limit";
 		System.arraycopy(partialData, 0, data, 1, partialData.length);
@@ -751,14 +737,10 @@ public class CenterPanel extends Observable {
 	}
 
 	private void drawHeroDrinksList() {
-		String[] data = new String[5];
-		
-		for(int i=0; i < 5; i++) {
-			data[i] = Integer.valueOf(i).toString();
-		}
+		String[] data = new String[] {"0", "1", "2", "3", "4"};
 		
 		this.heroDrink = new JList<String>(data);
-		this.heroDrink.setSelectedIndex(4);
+		this.heroDrink.setSelectedIndex(0);
 		this.heroDrinkScrollPane = new JScrollPane(this.heroDrink);
 		this.heroDrinkScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -769,11 +751,8 @@ public class CenterPanel extends Observable {
 	}
 
 	private void drawElementList() {
-		String[] data = new String[]{"Fire", "Ice", "Lightning", "Earth", "Wind", "Water", "Poison", "Holy", "Gravity",
-				"Restorative", "Cut", "Hit", "Punch", "Shoot", "Shout", "Hidden", "Non-elemental"};
-		
-		this.element = new JList<String>(data);
-		this.element.setSelectedIndex(16);
+		this.element = new JList<Elements>(Elements.values());
+		this.element.setSelectedIndex(0);
 		this.elementScrollPane = new JScrollPane(this.element);
 		this.elementScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -784,14 +763,19 @@ public class CenterPanel extends Observable {
 	}
 
 	private void drawPowerList() {
-		String[] data = new String[255]; //assuming min is 1
+		String[] data = new String[120]; //assuming min is 1
+		data[0] = "16";
 		
-		for(int i=1; i < 256; i++) {
-			data[i-1] = Integer.valueOf(i).toString();
+		for(int i=1; i < 16; i++) {
+			data[i] = Integer.valueOf(i).toString();
+		}
+		
+		for(int i=16; i < 120; i++) {
+			data[i] = Integer.valueOf(i+1).toString();
 		}
 		
 		this.power = new JList<String>(data);
-		this.power.setSelectedIndex(15);
+		this.power.setSelectedIndex(0);
 		this.powerScrollPane = new JScrollPane(this.power);
 		this.powerScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -803,13 +787,14 @@ public class CenterPanel extends Observable {
 
 	private void drawStrengthList() {
 		String[] data = new String[255]; //assuming min is 1
+		data[0] = "255";
 		
-		for(int i=1; i < 256; i++) {
-			data[i-1] = Integer.valueOf(i).toString();
+		for(int i=1; i < 255; i++) {
+			data[i] = Integer.valueOf(i).toString();
 		}
 		
 		this.strength = new JList<String>(data);
-		this.strength.setSelectedIndex(254);
+		this.strength.setSelectedIndex(0);
 		this.strengthScrollPane = new JScrollPane(this.strength);
 		this.strengthScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		
@@ -821,13 +806,14 @@ public class CenterPanel extends Observable {
 
 	private void drawLevelList() {
 		String[] data = new String[99]; //assuming min is 1
+		data[0] = "99";
 		
-		for(int i=1; i < 100; i++) {
-			data[i-1] = Integer.valueOf(i).toString();
+		for(int i=1; i < 99; i++) {
+			data[i] = Integer.valueOf(i).toString();
 		}
 		
 		this.level = new JList<String>(data);
-		this.level.setSelectedIndex(98);
+		this.level.setSelectedIndex(0);
 		this.levelScrollPane = new JScrollPane(this.level);
 		this.levelScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
 		

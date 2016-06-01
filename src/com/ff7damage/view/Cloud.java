@@ -9,6 +9,8 @@ public class Cloud extends Wrapper {
 	
 	@Override
 	public String[] getWeapons() {
-		return new String[]{"Ultima Weapon"};
+		return new String[]{"Ultima Weapon", "Buster Sword", "Mythril Saber", "Hardedge", "Butterfly Edge", "Enhance Sword", "Organics",
+				"Crystal Sword", "Force Stealer", "Rune Blade", "Murasame", "Nail Bat", "Yoshiyuki", "Apocalypse", "Heaven's Cloud",
+				"Ragnarok"};
 	}
 }
