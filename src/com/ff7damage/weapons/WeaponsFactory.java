@@ -281,8 +281,56 @@ public class WeaponsFactory {
 		return weaponsAttackBonuses.get(weaponName);
 	}
 
-	public static double[] getPostVarianceMultipliers(byte weaponCode, byte characterCode) {
-		// TODO implement
-		return new double[]{};
+	public static double[] getPostVarianceMultipliers(byte weaponCode, byte characterCode, Object... additional) {
+		String weaponName = getWeaponName(weaponCode, weaponCode);
+		
+		switch(weaponName) {
+		case "Yoshiyuki":
+		{
+			int deadCharacters = (int) additional[0];
+			return new double[] {1 + deadCharacters};
+		}
+		case "Powersoul":
+		{
+			double tifaCurrentHp = (double) additional[0];
+			double tifaMaxHp = (double) additional[1];
+			boolean nearDeath = tifaCurrentHp < tifaMaxHp / 4;
+			boolean deathSentence = (boolean) additional[2];
+			
+			int length = 0;
+			
+			length += nearDeath ? 1 : 0;
+			length += deathSentence ? 1 : 0;
+			
+			double[] toReturn = new double[length];
+			
+			if(toReturn.length == 0) {
+				return null;
+			}
+			else if(toReturn.length == 1 && nearDeath) {
+				toReturn[0] = 2;
+			}
+			else if(toReturn.length == 1 && deathSentence) {
+				toReturn[0] = 4;
+			}
+			else if(toReturn.length == 2) {
+				toReturn[0] = 2;
+				toReturn[1] = 4;
+			}
+			else {
+				return null;
+			}
+			
+			return toReturn;
+		}
+		case "Master Fist":
+		{
+			
+		}
+		default:
+		{
+			return null;
+		}
+		}
 	}
 }

@@ -193,10 +193,10 @@ public class Model extends Observable implements Observer {
 	
 	private void printVarianceModification(int adjustedBaseDamage, int randomNumerator, int minNumerator, int maxNumerator, int numerator, BigInteger fullNumerator) {
 		this.resultsForController.add("Base damage after modifiers and before random variance: " + adjustedBaseDamage);
-		this.resultsForController.add("Random variance = " + randomNumerator + "/4096 = " + (double)randomNumerator/(double)4096);
+		this.resultsForController.add("Random variance simulation = " + randomNumerator + "/4096 = " + (double)randomNumerator/(double)4096);
 		this.resultsForController.add("Possible random variance overflow: minimum numerator (if random variance numerator = 3841) = " + minNumerator);
 		this.resultsForController.add("Possible random variance overflow: maximum numerator (if random variance numerator = 4096) = " + maxNumerator);
-		this.resultsForController.add("Possible random variance overflow: actual numerator = " + numerator);
+		this.resultsForController.add("Possible random variance overflow: actual (simulation) numerator = " + numerator);
 		this.resultsForController.add("The non-overflowable numerator would be = " + fullNumerator.toString());
 		this.resultsForController.add("Base damage was " + (this.overflow.isBdPositive() ? "positive" : "negative") + ", so the first overflow which may happen here is " + (this.overflow.isBdPositive() ? "a classic overflow" : "an anti-overflow") + ".");
 		
