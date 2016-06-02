@@ -72,9 +72,10 @@ public class WeaponsFactory {
 		}
 	}
 	
-	private static GenericWeapon createNonUltimateWeapon(byte weaponCode, byte characterCode, double[] multipliers) {
+	private static WeaponInterface createNonUltimateWeapon(byte weaponCode, byte characterCode, double[] multipliers) {
 		String weaponName = getWeaponName(characterCode, weaponCode);
 		int atkBonus = getWeaponAttackBonus(weaponName);
+		
 		boolean longRangeWeapon = isLongRangeWeapon(weaponCode, characterCode);
 		GenericWeapon weapon = new GenericWeapon(atkBonus, weaponName, longRangeWeapon);
 		
@@ -282,54 +283,64 @@ public class WeaponsFactory {
 	}
 
 	public static double[] getPostVarianceMultipliers(byte weaponCode, byte characterCode, Object... additional) {
-		String weaponName = getWeaponName(weaponCode, weaponCode);
+		String weaponName = getWeaponName(characterCode, weaponCode);
 		
 		switch(weaponName) {
 		case "Yoshiyuki":
 		{
-			int deadCharacters = (int) additional[0];
+			int deadCharacters = Byte.valueOf((byte) additional[0]).intValue();
 			return new double[] {1 + deadCharacters};
 		}
 		case "Powersoul":
 		{
-			double tifaCurrentHp = (double) additional[0];
-			double tifaMaxHp = (double) additional[1];
-			boolean nearDeath = tifaCurrentHp < tifaMaxHp / 4;
-			boolean deathSentence = (boolean) additional[2];
+			boolean nearDeath = (boolean) additional[7];
+			boolean deathSentence = (boolean) additional[0];
 			
 			int length = 0;
 			
 			length += nearDeath ? 1 : 0;
 			length += deathSentence ? 1 : 0;
 			
-			double[] toReturn = new double[length];
+			double[] toReturn = new double[length == 0 ? 1 : length];
 			
-			if(toReturn.length == 0) {
-				return null;
-			}
-			else if(toReturn.length == 1 && nearDeath) {
+			if(toReturn.length == 1 && nearDeath) {
 				toReturn[0] = 2;
 			}
 			else if(toReturn.length == 1 && deathSentence) {
 				toReturn[0] = 4;
+			}
+			else if(toReturn.length == 1) {
+				toReturn[0] = 1;
 			}
 			else if(toReturn.length == 2) {
 				toReturn[0] = 2;
 				toReturn[1] = 4;
 			}
 			else {
-				return null;
+				return new double[]{};
 			}
 			
 			return toReturn;
 		}
 		case "Master Fist":
 		{
+			boolean deathSentence = (boolean) additional[0];
+			boolean poison = (boolean) additional[1];
+			boolean sadness = (boolean) additional[2];
+			boolean silence = (boolean) additional[3];
+			boolean slow = (boolean) additional[4];
+			boolean darkness = (boolean) additional[5];
+			boolean slowNumb = (boolean) additional[6];
+			boolean nearDeath = (boolean) additional[7];
 			
+			double multiplier = 1 + (nearDeath ? 1 : 0) + (poison ? 1 : 0) + (sadness ? 1 : 0) + (silence ? 1 : 0) + (slow ? 1 : 0) +
+					(darkness ? 1 : 0) + (slowNumb ? 2 : 0) + (deathSentence ? 2 : 0);
+			
+			return new double[]{multiplier}; 
 		}
 		default:
 		{
-			return null;
+			return new double[]{};
 		}
 		}
 	}

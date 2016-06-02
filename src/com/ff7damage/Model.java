@@ -403,11 +403,32 @@ public class Model extends Observable implements Observer {
 		
 		this.longRangeMateria = additional.get(2)[0] == (byte) 0x01; 
 		
-		double[] postVarianceMultipliers = WeaponsFactory.getPostVarianceMultipliers(weaponCode, characterCode);
+		Object[] postVarianceMultipliersParameters = getPostVarianceMultipliersParameters(centerPanelData, characterCode);
+		
+		double[] postVarianceMultipliers = WeaponsFactory.getPostVarianceMultipliers(weaponCode, characterCode, postVarianceMultipliersParameters);
 		WeaponInterface weapon = WeaponsFactory.createWeapon(weaponCode, characterCode, additional.get(0), postVarianceMultipliers);
 		this.attacker = CharacterFactory.createCharacter(characterCode, level, weapon, strength, additional.get(0), additional.get(1), berserk, frog, mini, attackerRow);
 	
 		manageTarget(rightPanelData);
+	}
+
+	private Object[] getPostVarianceMultipliersParameters(byte[] centerPanelData, byte characterCode) {
+		if(characterCode == (byte) 0x00) {
+			return new Object[]{centerPanelData[centerPanelData.length - 1]};
+		}
+		else if(characterCode == (byte) 0x02) {
+			Object[] toReturn = new Object[8];
+			int index = centerPanelData.length - 9;
+			
+			for(int i=1; i < 9; i++) {
+				toReturn[i - 1] = centerPanelData[index + i] == (byte) 0x01;
+			}
+			
+			return toReturn;
+		}
+		else {
+			return new Object[]{};
+		}
 	}
 
 	private void manageTarget(byte[] rightPanelData) {
@@ -443,7 +464,6 @@ public class Model extends Observable implements Observer {
 		overhead = fetchParameter(centerPanelData, overhead, toReturn);
 		
 		toReturn.add(new byte[]{centerPanelData[14 + overhead]});
-		System.out.println(centerPanelData[14 + overhead]);
 		
 		return toReturn;
 	}

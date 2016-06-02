@@ -74,6 +74,29 @@ public class CenterPanel extends Observable {
 	private JList<String> secondList;
 	private JList<String> thirdList;
 	
+	private JPanel sixthLine;
+	private JPanel seventhLine;
+	private JScrollPane deadScrollPane;
+	private JScrollPane longRangeScrollPane;
+	private JScrollPane deathSentenceScrollPane; // +2 mf, x4 ps
+	private JScrollPane poisonScrollPane; // +1 mf
+	private JScrollPane sadnessScrollPane; // +1 mf
+	private JScrollPane silenceScrollPane; // +1 mf
+	private JScrollPane slowScrollPane; // +1 mf
+	private JScrollPane darknessScrollPane; // +1 mf
+	private JScrollPane slowNumbScrollPane; // +2 mf
+	private JScrollPane nearDeathScrollPane; // +1 mf, x2 ps
+	private JList<String> deadList;
+	private JList<String> longRange;
+	private JList<String> deathSentence;
+	private JList<String> poison;
+	private JList<String> sadness;
+	private JList<String> silence;
+	private JList<String> slow;
+	private JList<String> darkness;
+	private JList<String> slowNumb;
+	private JList<String> nearDeath;
+	
 	private ByteBuffer data;
 	
 	private JDialog aboutDialog;
@@ -131,11 +154,192 @@ public class CenterPanel extends Observable {
 		drawThirdLine();
 		drawFourthLine();
 		drawFifthLine();
+		drawSixthLine();
+		drawSeventhLine();
 		
 		addButton();
 		addAboutButton();
 		
 		this.centerPanel.repaint();
+	}
+
+	private void drawSixthLine() {		
+		this.sixthLine = new JPanel();
+		this.sixthLine.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
+		
+		drawLongRangeList();
+		
+		if(this.selectedCharacter instanceof Tifa) {
+			drawDeathSentenceList();
+			drawPoisonList();
+			drawSadnessList();
+		}
+		else if(this.selectedCharacter instanceof Cloud) {
+			drawDeadCharactersListForYoshiyuki();
+		}
+		
+		this.sixthLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.sixthLine, this.centerPanelGBC);
+	}
+	
+	private void drawSeventhLine() {
+		if(!(this.selectedCharacter instanceof Tifa)) {
+			return;
+		}
+		
+		this.seventhLine = new JPanel();
+		this.seventhLine.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
+		
+		drawSilenceList();
+		drawSlowList();
+		drawDarknessList();
+		drawSlowNumbList();
+		drawNearDeathList();
+		
+		this.seventhLine.repaint();
+		this.centerPanelGBC.gridy++;
+		this.centerPanel.add(this.seventhLine, this.centerPanelGBC);
+	}
+
+	private void drawLongRangeList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.longRange = new JList<String>(data);
+		this.longRange.setSelectedIndex(1);
+		this.longRangeScrollPane = new JScrollPane(this.longRange);
+		this.longRangeScrollPane.setPreferredSize(new Dimension(5*this.width/16, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Does " + this.currentCharacter.getText().substring(10) + " wear Long Range Materia?");
+		
+		this.longRangeScrollPane.setColumnHeaderView(header);
+		this.sixthLine.add(this.longRangeScrollPane);
+	}
+	
+	private void drawNearDeathList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.nearDeath = new JList<String>(data);
+		this.nearDeath.setSelectedIndex(1);
+		this.nearDeathScrollPane = new JScrollPane(this.nearDeath);
+		this.nearDeathScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in near-death?");
+		
+		this.nearDeathScrollPane.setColumnHeaderView(header);
+		this.seventhLine.add(this.nearDeathScrollPane);
+	}
+	
+	private void drawSlowNumbList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.slowNumb = new JList<String>(data);
+		this.slowNumb.setSelectedIndex(1);
+		this.slowNumbScrollPane = new JScrollPane(this.slowNumb);
+		this.slowNumbScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in slow-numb?");
+		
+		this.slowNumbScrollPane.setColumnHeaderView(header);
+		this.seventhLine.add(this.slowNumbScrollPane);
+	}
+
+	private void drawDarknessList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.darkness = new JList<String>(data);
+		this.darkness.setSelectedIndex(1);
+		this.darknessScrollPane = new JScrollPane(this.darkness);
+		this.darknessScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in darkness?");
+		
+		this.darknessScrollPane.setColumnHeaderView(header);
+		this.seventhLine.add(this.darknessScrollPane);
+	}
+
+	private void drawSlowList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.slow = new JList<String>(data);
+		this.slow.setSelectedIndex(1);
+		this.slowScrollPane = new JScrollPane(this.slow);
+		this.slowScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in slow?");
+		
+		this.slowScrollPane.setColumnHeaderView(header);
+		this.seventhLine.add(this.slowScrollPane);
+	}
+
+	private void drawSilenceList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.silence = new JList<String>(data);
+		this.silence.setSelectedIndex(1);
+		this.silenceScrollPane = new JScrollPane(this.silence);
+		this.silenceScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in silence?");
+		
+		this.silenceScrollPane.setColumnHeaderView(header);
+		this.seventhLine.add(this.silenceScrollPane);
+	}
+
+	private void drawSadnessList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.sadness = new JList<String>(data);
+		this.sadness.setSelectedIndex(1);
+		this.sadnessScrollPane = new JScrollPane(this.sadness);
+		this.sadnessScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in sadness?");
+		
+		this.sadnessScrollPane.setColumnHeaderView(header);
+		this.sixthLine.add(this.sadnessScrollPane);
+	}
+
+	private void drawPoisonList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.poison = new JList<String>(data);
+		this.poison.setSelectedIndex(1);
+		this.poisonScrollPane = new JScrollPane(this.poison);
+		this.poisonScrollPane.setPreferredSize(new Dimension(this.width/8, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in poison?");
+		
+		this.poisonScrollPane.setColumnHeaderView(header);
+		this.sixthLine.add(this.poisonScrollPane);
+	}
+
+	private void drawDeathSentenceList() {
+		String[] data = new String[]{"Yes", "No"};
+		
+		this.deathSentence = new JList<String>(data);
+		this.deathSentence.setSelectedIndex(1);
+		this.deathSentenceScrollPane = new JScrollPane(this.deathSentence);
+		this.deathSentenceScrollPane.setPreferredSize(new Dimension(this.width/6, this.height/10));
+		
+		JLabel header = Utils.drawHeader("Is Tifa in death sentence?");
+		
+		this.deathSentenceScrollPane.setColumnHeaderView(header);
+		this.sixthLine.add(this.deathSentenceScrollPane);
+	}
+	
+	private void drawDeadCharactersListForYoshiyuki() {
+		String[] data = new String[]{"0", "1", "2"};
+		
+		this.deadList = new JList<String>(data);
+		this.deadList.setSelectedIndex(data.length - 1);
+		this.deadScrollPane = new JScrollPane(this.deadList);
+		this.deadScrollPane.setPreferredSize(new Dimension(this.width/4, this.height/10));
+		
+		JLabel header = Utils.drawHeader("How many active characters are dead?");
+		
+		this.deadScrollPane.setColumnHeaderView(header);
+		this.sixthLine.add(this.deadScrollPane);
 	}
 
 	private void addAboutButton() {
@@ -297,6 +501,7 @@ public class CenterPanel extends Observable {
 		 * 4th additional parameter (weapon atk bonus if not final): 1 + 1? bytes
 		 * 	1st byte: 0x00 useless, 0x01 useful
 		 *  2nd byte: bonus atk value (0x00-0xFF) or nothing if useless
+		 * tifa/cloud additional weapon parameters (post variance multipliers) 8 or 1 bytes or 0 if not Cloud/Tifa
 		 */
 		
 		int secondAdditionalParameterLength = getSecondAdditionalParameterLength();
@@ -305,14 +510,35 @@ public class CenterPanel extends Observable {
 		int thirdAdditionalParameterLength = getThirdAdditionalParameterLength();
 		int thirdAdditionalParameterTotalLength = 1 + (thirdAdditionalParameterLength != 0 ? 4 + thirdAdditionalParameterLength : 0);
 		
-		int totalLength = 15 + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength;
+		int totalLength = 15 + secondAdditionalParameterTotalLength + thirdAdditionalParameterTotalLength + getPostVarianceParametersLength();
 		
 		this.data = ByteBuffer.allocate(totalLength);
 		
 		addBasicData();
 		addAdditionalData(secondAdditionalParameterLength, thirdAdditionalParameterLength);
+		addPostVarianceData();
 		
 		return this.data.array();
+	}
+
+	private int getPostVarianceParametersLength() {
+		return this.selectedCharacter instanceof Cloud ? 1 : this.selectedCharacter instanceof Tifa ? 8 : 0;
+	}
+
+	private void addPostVarianceData() {
+		if(this.selectedCharacter instanceof Cloud) {
+			this.data.put(Utils.stringToHexToByte(this.deadList.getSelectedValue()));
+		}
+		else if(this.selectedCharacter instanceof Tifa) {
+			this.data.put(this.deathSentence.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.poison.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.sadness.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.silence.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.slow.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.darkness.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.slowNumb.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+			this.data.put(this.nearDeath.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00);
+		}
 	}
 
 	private void addAdditionalData(int secondAdditionalParameterLength, int thirdAdditionalParameterLength) {
@@ -325,7 +551,7 @@ public class CenterPanel extends Observable {
 	}
 
 	private void putFourthAdditionalParameter() {
-		byte fourth = (byte) 0x01; //TODO implement long range
+		byte fourth = this.longRange.getSelectedValue() == "Yes" ? (byte) 0x01 : (byte) 0x00;
 		this.data.put(fourth);
 	}
 
@@ -836,4 +1062,16 @@ public class CenterPanel extends Observable {
 		this.weaponScrollPane.setColumnHeaderView(header);
 		this.firstLine.add(this.weaponScrollPane);
 	}
+	
+	/*private void drawList(String[] data, JScrollPane scrollPane, JList<String> list, int highlightedIndex, int width, int height, String headerMessage, JPanel line) {
+		list = new JList<String>(data);
+		list.setSelectedIndex(highlightedIndex);
+		scrollPane = new JScrollPane(list);
+		scrollPane.setPreferredSize(new Dimension(width, height));
+		
+		JLabel header = Utils.drawHeader(headerMessage);
+		
+		scrollPane.setColumnHeaderView(header);
+		line.add(scrollPane);
+	}*/
 }
